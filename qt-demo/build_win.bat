@@ -21,12 +21,12 @@ if %errorlevel% neq 0 (
 
 set PATH=%QTDIR%\bin;%PATH%
 
-if exist release rmdir /s /q release
-
 echo ========================================
 echo Build mqtt-client (qmqtt demo)
 echo ========================================
 echo.
+
+if exist release rmdir /s /q release
 
 qmake mqtt-client.pro CONFIG+=release
 if %errorlevel% neq 0 ( echo [ERROR] qmake failed & pause & exit /b 1 )
