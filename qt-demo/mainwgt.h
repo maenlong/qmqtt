@@ -20,11 +20,11 @@ public:
     ~MainWgt();
 
 private slots:
-    void on_m_btnConnect_clicked();
-    void on_m_btnDisconnect_clicked();
-    void on_m_btnSubscribe_clicked();
-    void on_m_btnPublish_clicked();
-    void on_m_btnClearLog_clicked();
+    void on_connectBtn_clicked();
+    void on_disconnectBtn_clicked();
+    void on_subscribeBtn_clicked();
+    void on_publishBtn_clicked();
+    void on_clearLogBtn_clicked();
 
 private:
     void appendMessage(const QString& msg, bool isSent);
