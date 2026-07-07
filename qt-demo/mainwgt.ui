@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWgt</class>
+ <widget class="QWidget" name="MainWgt">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>720</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MQTT Client Demo</string>
+  </property>
+  <layout class="QVBoxLayout" name="m_layout">
+   <item>
+    <widget class="QGroupBox" name="m_grpConnection">
+     <property name="title">
+      <string>Connection</string>
+     </property>
+     <layout class="QGridLayout" name="gridConnection">
+      <item row="0" column="0">
+       <widget class="QLabel" name="m_labelHost">
+        <property name="text"><string>Host:</string></property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="m_host"/>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="m_labelPort">
+        <property name="text"><string>Port:</string></property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QLineEdit" name="m_port">
+        <property name="maximumWidth"><number>80</number></property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QLabel" name="m_labelType">
+        <property name="text"><string>Type:</string></property>
+       </widget>
+      </item>
+      <item row="0" column="5">
+       <widget class="QComboBox" name="m_type">
+        <property name="maximumWidth"><number>80</number></property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="m_labelClientId">
+        <property name="text"><string>Client ID:</string></property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="5">
+       <widget class="QLineEdit" name="m_clientId"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="m_labelUsername">
+        <property name="text"><string>Username:</string></property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="m_username"/>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="m_labelPassword">
+        <property name="text"><string>Password:</string></property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QLineEdit" name="m_password">
+        <property name="echoMode"><enum>QLineEdit::Password</enum></property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QLabel" name="m_labelKeepAlive">
+        <property name="text"><string>KA(s):</string></property>
+       </widget>
+      </item>
+      <item row="2" column="5">
+       <widget class="QLineEdit" name="m_keepAlive">
+        <property name="maximumWidth"><number>60</number></property>
+        <property name="text"><string>30</string></property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="6">
+       <layout class="QHBoxLayout" name="layoutButtons">
+        <item>
+         <widget class="QPushButton" name="m_btnConnect">
+          <property name="text"><string>Connect</string></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="m_btnDisconnect">
+          <property name="text"><string>Disconnect</string></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="m_labelStatus">
+          <property name="text"><string>Status:</string></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="m_status">
+          <property name="text"><string>Disconnected</string></property>
+         </widget>
+        </item>
+        <item>
+         <spacer>
+          <property name="orientation"><enum>Qt::Horizontal</enum></property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="m_grpSubscribe">
+     <property name="title">
+      <string>Subscribe</string>
+     </property>
+     <layout class="QHBoxLayout" name="layoutSubscribe">
+      <item>
+       <widget class="QLabel" name="m_labelSelfImAccid">
+        <property name="text"><string>Self imAccid:</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="m_selfImAccid"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="m_btnSubscribe">
+        <property name="text"><string>Subscribe</string></property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="m_grpPublish">
+     <property name="title">
+      <string>Publish</string>
+     </property>
+     <layout class="QVBoxLayout" name="layoutPublish">
+      <item>
+       <layout class="QHBoxLayout" name="layoutTarget">
+        <item>
+         <widget class="QLabel" name="m_labelTargetImAccid">
+          <property name="text"><string>Target imAccid:</string></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="m_targetImAccid"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPlainTextEdit" name="m_payload">
+        <property name="maximumBlockCount"><number>8</number></property>
+        <property name="placeholderText">
+         <string>{"v":1,"senderId":"...","commandType":"CS",...}</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="m_btnPublish">
+        <property name="text"><string>Publish</string></property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="m_grpLog">
+     <property name="title">
+      <string>Log</string>
+     </property>
+     <layout class="QVBoxLayout" name="layoutLog">
+      <item>
+       <widget class="QPlainTextEdit" name="m_log">
+        <property name="readOnly"><bool>true</bool></property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>m_host</tabstop>
+  <tabstop>m_port</tabstop>
+  <tabstop>m_type</tabstop>
+  <tabstop>m_clientId</tabstop>
+  <tabstop>m_username</tabstop>
+  <tabstop>m_password</tabstop>
+  <tabstop>m_keepAlive</tabstop>
+  <tabstop>m_btnConnect</tabstop>
+  <tabstop>m_btnDisconnect</tabstop>
+  <tabstop>m_selfImAccid</tabstop>
+  <tabstop>m_btnSubscribe</tabstop>
+  <tabstop>m_targetImAccid</tabstop>
+  <tabstop>m_payload</tabstop>
+  <tabstop>m_btnPublish</tabstop>
+  <tabstop>m_log</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

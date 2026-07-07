@@ -3,3 +3,13 @@
 debug
 release
 *.autosave
+
+# build intermediates
+build_script/
+qt-demo/.moc/
+qt-demo/.obj/
+qt-demo/.pch/
+qt-demo/.uic/
+qt-demo/Makefile
+qt-demo/Makefile.Debug
+qt-demo/Makefile.Release
