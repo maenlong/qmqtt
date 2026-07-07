@@ -31,7 +31,7 @@ private:
     void updateConnectionState(bool connected);
 
     Ui::MainWgt* m_ui;
-    QMQTT::Client* m_client;
+    QMQTT::Client* m_client = nullptr;
 };
 
 #endif

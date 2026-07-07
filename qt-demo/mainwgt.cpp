@@ -8,7 +8,6 @@
 MainWgt::MainWgt(QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::MainWgt)
-    , m_client(nullptr)
 {
     m_ui->setupUi(this);
     setWindowTitle("MQTT Client Demo");
