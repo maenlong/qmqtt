@@ -8,3 +8,8 @@ include($$PWD/../qmqtt.pri)
 FORMS += mainwgt.ui
 SOURCES += main.cpp mainwgt.cpp
 HEADERS += mainwgt.h
+
+win32 {
+    BIN_DIR = $$shell_path($$PWD/bin)
+    QMAKE_POST_LINK += if exist $$BIN_DIR $(COPY_DIR) $$BIN_DIR $(DESTDIR)
+}

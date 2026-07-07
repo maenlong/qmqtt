@@ -15,7 +15,20 @@ MainWgt::MainWgt(QWidget* parent)
     m_ui->m_port->setText("1883");
     m_ui->m_clientId->setText("qt_demo_" + QUuid::createUuid().toString().left(8));
     m_ui->m_keepAlive->setText("30");
-    m_ui->m_type->addItems({"TCP", "WSS"});
+    m_ui->m_type->addItems({"TCP", "WS", "WSS"});
+
+    connect(m_ui->m_type, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, [this](int index) {
+        Q_UNUSED(index)
+        QString type = m_ui->m_type->currentText();
+        if (type == "WSS") {
+            m_ui->m_port->setText("8084");
+        } else if (type == "WS") {
+            m_ui->m_port->setText("8083");
+        } else {
+            m_ui->m_port->setText("1883");
+        }
+    });
 
     connect(m_ui->m_btnConnect, &QPushButton::clicked, this, &MainWgt::sig_connect);
     connect(m_ui->m_btnDisconnect, &QPushButton::clicked, this, &MainWgt::sig_disconnect);
@@ -47,7 +60,10 @@ void MainWgt::sig_connect()
     int keepAlive = m_ui->m_keepAlive->text().toInt();
 
     if (m_ui->m_type->currentText() == "WSS") {
-        QString url = QString("wss://%1:%2").arg(host).arg(port);
+        QString url = QString("wss://%1:%2/mqtt").arg(host).arg(port);
+        m_client = new QMQTT::Client(url, "", QWebSocketProtocol::VersionLatest, false, this);
+    } else if (m_ui->m_type->currentText() == "WS") {
+        QString url = QString("ws://%1:%2/mqtt").arg(host).arg(port);
         m_client = new QMQTT::Client(url, "", QWebSocketProtocol::VersionLatest, false, this);
     } else {
         m_client = new QMQTT::Client(host, port, false, false, this);
