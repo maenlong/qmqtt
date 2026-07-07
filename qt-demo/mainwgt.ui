@@ -108,6 +108,12 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="m_cleanSession">
+          <property name="text"><string>Clean Session</string></property>
+          <property name="checked"><bool>true</bool></property>
+         </widget>
+        </item>
+        <item>
          <spacer>
           <property name="orientation"><enum>Qt::Horizontal</enum></property>
          </spacer>
@@ -176,16 +182,26 @@
       <item>
        <widget class="QLineEdit" name="m_selfImAccid"/>
       </item>
-      <item>
-       <widget class="QPushButton" name="m_btnSubscribe">
-        <property name="text"><string>Subscribe</string></property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="m_grpPublish">
+       <item>
+        <widget class="QLabel" name="m_labelSubQos">
+         <property name="text"><string>QoS:</string></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="m_subQos">
+         <property name="maximumWidth"><number>60</number></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_btnSubscribe">
+         <property name="text"><string>Subscribe</string></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="m_grpPublish">
      <property name="title">
       <string>Publish</string>
      </property>
@@ -200,10 +216,20 @@
         <item>
          <widget class="QLineEdit" name="m_targetImAccid"/>
         </item>
+        <item>
+         <widget class="QLabel" name="m_labelPubQos">
+          <property name="text"><string>QoS:</string></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="m_pubQos">
+          <property name="maximumWidth"><number>60</number></property>
+         </widget>
+        </item>
        </layout>
       </item>
-      <item>
-       <widget class="QPlainTextEdit" name="m_payload">
+       <item>
+        <widget class="QPlainTextEdit" name="m_payload">
         <property name="maximumBlockCount"><number>8</number></property>
         <property name="placeholderText">
          <string>{"v":1,"senderId":"...","commandType":"CS",...}</string>
