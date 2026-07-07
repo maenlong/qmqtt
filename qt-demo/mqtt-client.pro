@@ -5,6 +5,9 @@ CONFIG += c++11 QMQTT_WEBSOCKETS
 
 include($$PWD/../qmqtt.pri)
 
+TRANSLATIONS = mqtt-client_zh_CN.ts
+
+RESOURCES += mqtt-client.qrc
 FORMS += mainwgt.ui
 SOURCES += main.cpp mainwgt.cpp
 HEADERS += mainwgt.h
