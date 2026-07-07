@@ -14,4 +14,5 @@ qt-demo/Makefile
 qt-demo/Makefile.Debug
 qt-demo/Makefile.Release
 qt-demo/.qtc_clangd/
+qt-demo/mqtt-client.app/
 .qmake.stash
