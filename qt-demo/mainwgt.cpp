@@ -18,6 +18,10 @@ MainWgt::MainWgt(QWidget* parent)
     m_ui->m_keepAlive->setText("30");
     m_ui->m_type->addItems({"TCP", "WS", "WSS"});
     m_ui->m_willQos->addItems({"0", "1", "2"});
+    m_ui->m_subQos->addItems({"0", "1", "2"});
+    m_ui->m_subQos->setCurrentIndex(1);
+    m_ui->m_pubQos->addItems({"0", "1", "2"});
+    m_ui->m_pubQos->setCurrentIndex(1);
 
     connect(m_ui->m_type, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [this](int index) {
@@ -78,7 +82,7 @@ void MainWgt::sig_connect()
         m_client->setPassword(password.toUtf8());
     }
     m_client->setKeepAlive(static_cast<quint16>(keepAlive));
-    m_client->setCleanSession(true);
+    m_client->setCleanSession(m_ui->m_cleanSession->isChecked());
     m_client->setAutoReconnect(true);
     m_client->setAutoReconnectInterval(5000);
 
@@ -94,7 +98,7 @@ void MainWgt::sig_connect()
         updateConnectionState(true);
         if (!m_ui->m_selfImAccid->text().isEmpty()) {
             QString topic = QString("user/%1/inbox").arg(m_ui->m_selfImAccid->text());
-            m_client->subscribe(topic, 1);
+            m_client->subscribe(topic, static_cast<quint8>(m_ui->m_subQos->currentIndex()));
             appendMessage("[Subscribed] " + topic, false);
         }
     });
@@ -140,8 +144,8 @@ void MainWgt::sig_subscribe()
     if (imAccid.isEmpty()) return;
 
     QString topic = QString("user/%1/inbox").arg(imAccid);
-    m_client->subscribe(topic, 1);
-    appendMessage("[Subscribe] " + topic + " (QoS 1)", false);
+    m_client->subscribe(topic, static_cast<quint8>(m_ui->m_subQos->currentIndex()));
+    appendMessage("[Subscribe] " + topic + " (QoS " + m_ui->m_subQos->currentText() + ")", false);
 }
 
 void MainWgt::sig_publish()
@@ -156,9 +160,9 @@ void MainWgt::sig_publish()
     if (target.isEmpty() || payload.isEmpty()) return;
 
     QString topic = QString("user/%1/inbox").arg(target);
-    QMQTT::Message msg(0, topic, payload.toUtf8(), 1);
+    QMQTT::Message msg(0, topic, payload.toUtf8(), static_cast<quint8>(m_ui->m_pubQos->currentIndex()));
     m_client->publish(msg);
-    appendMessage("[Sent] " + topic + ": " + payload, true);
+    appendMessage("[Sent] " + topic + ": " + payload + " (QoS " + m_ui->m_pubQos->currentText() + ")", true);
 }
 
 void MainWgt::appendMessage(const QString& msg, bool isSent)
