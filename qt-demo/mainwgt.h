@@ -2,7 +2,10 @@
 #define MAINWGT_H
 
 #include <QWidget>
-#include "qmqtt.h"
+
+namespace QMQTT {
+class Client;
+}
 
 namespace Ui {
 class MainWgt;

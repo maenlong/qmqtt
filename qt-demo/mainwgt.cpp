@@ -1,4 +1,5 @@
 #include "mainwgt.h"
+#include "qmqtt.h"
 #include "ui_mainwgt.h"
 #include <QUuid>
 #include <QSslError>
