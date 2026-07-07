@@ -1,6 +1,7 @@
 #include "mainwgt.h"
 #include "ui_mainwgt.h"
 #include <QUuid>
+#include <QtWebSockets/QWebSocketProtocol>
 
 MainWgt::MainWgt(QWidget* parent)
     : QWidget(parent)
@@ -15,7 +16,6 @@ MainWgt::MainWgt(QWidget* parent)
     m_ui->m_clientId->setText("qt_demo_" + QUuid::createUuid().toString().left(8));
     m_ui->m_keepAlive->setText("30");
     m_ui->m_type->addItems({"TCP", "WSS"});
-
 
     connect(m_ui->m_btnConnect, &QPushButton::clicked, this, &MainWgt::sig_connect);
     connect(m_ui->m_btnDisconnect, &QPushButton::clicked, this, &MainWgt::sig_disconnect);
@@ -63,11 +63,14 @@ void MainWgt::sig_connect()
     m_client->setAutoReconnect(true);
     m_client->setAutoReconnectInterval(5000);
 
-
-
     connect(m_client, &QMQTT::Client::connected, this, [this]() {
         appendMessage("[Connected] " + m_ui->m_host->text() + ":" + m_ui->m_port->text(), false);
         updateConnectionState(true);
+        if (!m_ui->m_selfImAccid->text().isEmpty()) {
+            QString topic = QString("user/%1/inbox").arg(m_ui->m_selfImAccid->text());
+            m_client->subscribe(topic, 1);
+            appendMessage("[Subscribed] " + topic, false);
+        }
     });
 
     connect(m_client, &QMQTT::Client::disconnected, this, [this]() {
@@ -83,12 +86,6 @@ void MainWgt::sig_connect()
         appendMessage("[Received] " + msg.topic() + ": " + QString::fromUtf8(msg.payload()), false);
     });
 
-    if (!m_ui->m_selfImAccid->text().isEmpty()) {
-        QString topic = QString("user/%1/inbox").arg(m_ui->m_selfImAccid->text());
-        m_client->subscribe(topic, 1);
-        appendMessage("[Subscribed] " + topic, false);
-    }
-
     m_client->connectToHost();
     appendMessage("[Connecting] ...", false);
 }
@@ -96,6 +93,7 @@ void MainWgt::sig_connect()
 void MainWgt::sig_disconnect()
 {
     if (m_client) {
+        m_client->setAutoReconnect(false);
         m_client->disconnectFromHost();
     }
 }
