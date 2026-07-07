@@ -58,6 +58,9 @@ MainWgt::MainWgt(QWidget* parent)
     connect(m_ui->m_btnDisconnect, &QPushButton::clicked, this, &MainWgt::sig_disconnect);
     connect(m_ui->m_btnSubscribe, &QPushButton::clicked, this, &MainWgt::sig_subscribe);
     connect(m_ui->m_btnPublish, &QPushButton::clicked, this, &MainWgt::sig_publish);
+    connect(m_ui->m_btnClearLog, &QPushButton::clicked, m_ui->m_log, &QPlainTextEdit::clear);
+
+    m_ui->m_layout->setStretch(m_ui->m_layout->indexOf(m_ui->m_grpLog), 1);
 
     m_ui->m_btnDisconnect->setEnabled(false);
     m_ui->m_status->setText("Disconnected");

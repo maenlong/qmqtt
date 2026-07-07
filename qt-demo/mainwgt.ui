@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>MainWgt</class>
- <widget class="QWidget" name="MainWgt">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>640</width>
-    <height>720</height>
-   </rect>
-  </property>
+  <widget class="QWidget" name="MainWgt">
+   <property name="minimumSize">
+    <size>
+     <width>640</width>
+     <height>720</height>
+    </size>
+   </property>
   <property name="windowTitle">
    <string>MQTT Client Demo</string>
   </property>
@@ -230,7 +228,6 @@
       </item>
        <item>
         <widget class="QPlainTextEdit" name="m_payload">
-        <property name="maximumBlockCount"><number>8</number></property>
         <property name="placeholderText">
          <string>{"v":1,"senderId":"...","commandType":"CS",...}</string>
         </property>
@@ -253,7 +250,23 @@
       <item>
        <widget class="QPlainTextEdit" name="m_log">
         <property name="readOnly"><bool>true</bool></property>
+        <property name="maximumBlockCount"><number>500</number></property>
        </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="layoutLogButtons">
+        <item>
+         <spacer>
+          <property name="orientation"><enum>Qt::Horizontal</enum></property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="m_btnClearLog">
+          <property name="text"><string>Clear</string></property>
+          <property name="maximumWidth"><number>80</number></property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
