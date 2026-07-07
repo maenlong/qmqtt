@@ -16,6 +16,7 @@ MainWgt::MainWgt(QWidget* parent)
     m_ui->m_clientId->setText("qt_demo_" + QUuid::createUuid().toString().left(8));
     m_ui->m_keepAlive->setText("30");
     m_ui->m_type->addItems({"TCP", "WS", "WSS"});
+    m_ui->m_willQos->addItems({"0", "1", "2"});
 
     connect(m_ui->m_type, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [this](int index) {
@@ -78,6 +79,13 @@ void MainWgt::sig_connect()
     m_client->setCleanSession(true);
     m_client->setAutoReconnect(true);
     m_client->setAutoReconnectInterval(5000);
+
+    if (!m_ui->m_willTopic->text().isEmpty()) {
+        m_client->setWillTopic(m_ui->m_willTopic->text());
+        m_client->setWillMessage(m_ui->m_willMessage->text().toUtf8());
+        m_client->setWillQos(m_ui->m_willQos->currentIndex());
+        m_client->setWillRetain(m_ui->m_willRetain->isChecked());
+    }
 
     connect(m_client, &QMQTT::Client::connected, this, [this]() {
         appendMessage("[Connected] " + m_ui->m_host->text() + ":" + m_ui->m_port->text(), false);

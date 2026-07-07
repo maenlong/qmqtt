@@ -118,6 +118,51 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="m_grpWill">
+     <property name="title">
+      <string>Last Will</string>
+     </property>
+     <layout class="QGridLayout" name="gridWill">
+      <item row="0" column="0">
+       <widget class="QLabel" name="m_labelWillTopic">
+        <property name="text"><string>Will Topic:</string></property>
+       </widget>
+      </item>
+      <item row="0" column="1" colspan="5">
+       <widget class="QLineEdit" name="m_willTopic"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="m_labelWillMessage">
+        <property name="text"><string>Will Message:</string></property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="5">
+       <widget class="QLineEdit" name="m_willMessage"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="m_labelWillQos">
+        <property name="text"><string>QoS:</string></property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="m_willQos">
+        <property name="maximumWidth"><number>60</number></property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QCheckBox" name="m_willRetain">
+        <property name="text"><string>Retain</string></property>
+       </widget>
+      </item>
+      <item row="2" column="3" colspan="3">
+       <spacer>
+        <property name="orientation"><enum>Qt::Horizontal</enum></property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="m_grpSubscribe">
      <property name="title">
       <string>Subscribe</string>
