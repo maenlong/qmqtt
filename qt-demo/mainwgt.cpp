@@ -23,6 +23,24 @@ MainWgt::MainWgt(QWidget* parent)
     m_ui->m_pubQos->addItems({"0", "1", "2"});
     m_ui->m_pubQos->setCurrentIndex(1);
 
+    m_ui->m_host->setToolTip("MQTT broker address, e.g. broker.emqx.io");
+    m_ui->m_port->setToolTip("1883 = TCP, 8083 = WS, 8084 = WSS");
+    m_ui->m_type->setToolTip("TCP: raw MQTT\nWS: WebSocket (port 8083)\nWSS: WebSocket + TLS (port 8084)");
+    m_ui->m_clientId->setToolTip("Unique client identifier.\nBroker uses it to distinguish clients.");
+    m_ui->m_username->setToolTip("Optional: broker authentication");
+    m_ui->m_password->setToolTip("Optional: broker authentication password");
+    m_ui->m_keepAlive->setToolTip("Heartbeat interval (seconds).\nIf broker receives no packet within 1.5x this interval, client is considered disconnected.");
+    m_ui->m_cleanSession->setToolTip("ON: start a fresh session, discard old subscriptions & offline messages.\nOFF: broker preserves subscriptions & offline messages across reconnects.");
+    m_ui->m_willTopic->setToolTip("Last Will topic.\nBroker publishes this message when client disconnects unexpectedly.");
+    m_ui->m_willMessage->setToolTip("Last Will payload (sent when client goes offline unexpectedly)");
+    m_ui->m_willQos->setToolTip("0: at most once\n1: at least once (default)\n2: exactly once");
+    m_ui->m_willRetain->setToolTip("If checked, broker keeps this message for late subscribers.");
+    m_ui->m_selfImAccid->setToolTip("Your IM account ID.\nAuto-subscribes to user/{imAccid}/inbox on connect.");
+    m_ui->m_subQos->setToolTip("0: at most once (fastest)\n1: at least once (may duplicate)\n2: exactly once (slowest)");
+    m_ui->m_targetImAccid->setToolTip("Recipient IM account ID.\nMessage is published to user/{imAccid}/inbox.");
+    m_ui->m_pubQos->setToolTip("0: at most once (fastest)\n1: at least once (may duplicate)\n2: exactly once (slowest)");
+    m_ui->m_payload->setToolTip("JSON message payload");
+
     connect(m_ui->m_type, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [this](int index) {
         Q_UNUSED(index)
