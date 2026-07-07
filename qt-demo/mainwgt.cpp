@@ -54,12 +54,6 @@ MainWgt::MainWgt(QWidget* parent)
         }
     });
 
-    connect(m_ui->m_btnConnect, &QPushButton::clicked, this, &MainWgt::sig_connect);
-    connect(m_ui->m_btnDisconnect, &QPushButton::clicked, this, &MainWgt::sig_disconnect);
-    connect(m_ui->m_btnSubscribe, &QPushButton::clicked, this, &MainWgt::sig_subscribe);
-    connect(m_ui->m_btnPublish, &QPushButton::clicked, this, &MainWgt::sig_publish);
-    connect(m_ui->m_btnClearLog, &QPushButton::clicked, m_ui->m_log, &QPlainTextEdit::clear);
-
     m_ui->m_layout->setStretch(m_ui->m_layout->indexOf(m_ui->m_grpLog), 1);
 
     m_ui->m_btnDisconnect->setEnabled(false);
@@ -71,7 +65,7 @@ MainWgt::~MainWgt()
     delete m_ui;
 }
 
-void MainWgt::sig_connect()
+void MainWgt::on_m_btnConnect_clicked()
 {
     if (m_client) {
         m_client->disconnect();
@@ -147,7 +141,7 @@ void MainWgt::sig_connect()
     appendMessage("[Connecting] ...", false);
 }
 
-void MainWgt::sig_disconnect()
+void MainWgt::on_m_btnDisconnect_clicked()
 {
     if (m_client) {
         m_client->setAutoReconnect(false);
@@ -155,7 +149,7 @@ void MainWgt::sig_disconnect()
     }
 }
 
-void MainWgt::sig_subscribe()
+void MainWgt::on_m_btnSubscribe_clicked()
 {
     if (!m_client || !m_client->isConnectedToHost()) {
         appendMessage("[Error] Not connected", false);
@@ -169,7 +163,7 @@ void MainWgt::sig_subscribe()
     appendMessage("[Subscribe] " + topic + " (QoS " + m_ui->m_subQos->currentText() + ")", false);
 }
 
-void MainWgt::sig_publish()
+void MainWgt::on_m_btnPublish_clicked()
 {
     if (!m_client || !m_client->isConnectedToHost()) {
         appendMessage("[Error] Not connected", false);
@@ -184,6 +178,11 @@ void MainWgt::sig_publish()
     QMQTT::Message msg(0, topic, payload.toUtf8(), static_cast<quint8>(m_ui->m_pubQos->currentIndex()));
     m_client->publish(msg);
     appendMessage("[Sent] " + topic + ": " + payload + " (QoS " + m_ui->m_pubQos->currentText() + ")", true);
+}
+
+void MainWgt::on_m_btnClearLog_clicked()
+{
+    m_ui->m_log->clear();
 }
 
 void MainWgt::appendMessage(const QString& msg, bool isSent)

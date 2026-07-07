@@ -17,10 +17,11 @@ public:
     ~MainWgt();
 
 private slots:
-    void sig_connect();
-    void sig_disconnect();
-    void sig_subscribe();
-    void sig_publish();
+    void on_m_btnConnect_clicked();
+    void on_m_btnDisconnect_clicked();
+    void on_m_btnSubscribe_clicked();
+    void on_m_btnPublish_clicked();
+    void on_m_btnClearLog_clicked();
 
 private:
     void appendMessage(const QString& msg, bool isSent);
