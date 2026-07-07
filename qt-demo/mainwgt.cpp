@@ -48,6 +48,7 @@ MainWgt::~MainWgt()
 void MainWgt::sig_connect()
 {
     if (m_client) {
+        m_client->disconnect();
         m_client->disconnectFromHost();
         m_client->deleteLater();
         m_client = nullptr;
