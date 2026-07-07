@@ -1,6 +1,7 @@
 #include "mainwgt.h"
 #include "ui_mainwgt.h"
 #include <QUuid>
+#include <QSslError>
 #include <QtWebSockets/QWebSocketProtocol>
 
 MainWgt::MainWgt(QWidget* parent)
@@ -105,6 +106,12 @@ void MainWgt::sig_connect()
 
     connect(m_client, &QMQTT::Client::error, this, [this](const QMQTT::ClientError error) {
         appendMessage("[Error] code: " + QString::number(error), false);
+    });
+
+    connect(m_client, &QMQTT::Client::sslErrors, this, [this](const QList<QSslError>& errors) {
+        for (const QSslError& err : errors) {
+            appendMessage("[SSL Error] " + err.errorString(), false);
+        }
     });
 
     connect(m_client, &QMQTT::Client::received, this, [this](const QMQTT::Message& msg) {
