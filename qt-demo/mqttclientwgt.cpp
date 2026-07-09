@@ -1,15 +1,15 @@
 ﻿#include "mqttclientwgt.h"
-#include "qmqtt.h"
+#include "mqttclientmgr.h"
 #include "ui_mqttclientwgt.h"
 #include <QApplication>
 #include <QTranslator>
 #include <QUuid>
 #include <QSslError>
-#include <QtWebSockets/QWebSocketProtocol>
 
 MqttClientWgt::MqttClientWgt(QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::MqttClientWgt)
+    , m_mqttMgr(new MqttClientMgr(this))
 {
     m_ui->setupUi(this);
     m_ui->hostLet->setText("broker.emqx.io");
@@ -23,22 +23,22 @@ MqttClientWgt::MqttClientWgt(QWidget* parent)
     m_ui->pubQosCbx->addItems({"0", "1", "2"});
     m_ui->pubQosCbx->setCurrentIndex(1);
     connect(m_ui->typeCbx, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [this](int index) {
-        Q_UNUSED(index)
-        QString type = m_ui->typeCbx->currentText();
-        if (type == "WSS")
-        {
-            m_ui->portLet->setText("8084");
-        }
-        else if (type == "WS")
-        {
-            m_ui->portLet->setText("8083");
-        }
-        else
-        {
-            m_ui->portLet->setText("1883");
-        }
-    });
+            this, &MqttClientWgt::slot_onTypeChanged);
+
+    connect(m_mqttMgr, &MqttClientMgr::sig_connected,
+            this, &MqttClientWgt::slot_onConnected);
+
+    connect(m_mqttMgr, &MqttClientMgr::sig_disconnected,
+            this, &MqttClientWgt::slot_onDisconnected);
+
+    connect(m_mqttMgr, &MqttClientMgr::sig_error,
+            this, &MqttClientWgt::slot_onError);
+
+    connect(m_mqttMgr, &MqttClientMgr::sig_sslErrors,
+            this, &MqttClientWgt::slot_onSslErrors);
+
+    connect(m_mqttMgr, &MqttClientMgr::sig_messageReceived,
+            this, &MqttClientWgt::slot_onMessageReceived);
 
     m_ui->mainLayout->setStretch(m_ui->mainLayout->indexOf(m_ui->logGrp), 1);
     m_ui->langCbx->addItems({"EN", "中文"});
@@ -53,102 +53,32 @@ MqttClientWgt::~MqttClientWgt()
 
 void MqttClientWgt::on_connectBtn_clicked()
 {
-    if (m_client)
-    {
-        m_client->disconnect();
-        m_client->disconnectFromHost();
-        m_client->deleteLater();
-        m_client = nullptr;
-    }
+    MqttConnectionParams params;
+    params.host = m_ui->hostLet->text();
+    params.port = m_ui->portLet->text().toUShort();
+    params.clientId = m_ui->clientIdLet->text();
+    params.username = m_ui->usernameLet->text();
+    params.password = m_ui->passwordLet->text();
+    params.keepAlive = m_ui->keepAliveLet->text().toInt();
+    params.type = m_ui->typeCbx->currentIndex();
+    params.cleanSession = m_ui->cleanSessionCbk->isChecked();
+    params.willTopic = m_ui->willTopicLet->text();
+    params.willMessage = m_ui->willMessageLet->text();
+    params.willQos = m_ui->willQosCbx->currentIndex();
+    params.willRetain = m_ui->willRetainCbk->isChecked();
 
-    QString host = m_ui->hostLet->text();
-    quint16 port = m_ui->portLet->text().toUShort();
-    QString clientId = m_ui->clientIdLet->text();
-    QString username = m_ui->usernameLet->text();
-    QString password = m_ui->passwordLet->text();
-    int keepAlive = m_ui->keepAliveLet->text().toInt();
-
-    if (m_ui->typeCbx->currentText() == "WSS")
-    {
-        QString url = QString("wss://%1:%2/mqtt").arg(host).arg(port);
-        m_client = new QMQTT::Client(url, "", QWebSocketProtocol::VersionLatest, false, this);
-    }
-    else if (m_ui->typeCbx->currentText() == "WS")
-    {
-        QString url = QString("ws://%1:%2/mqtt").arg(host).arg(port);
-        m_client = new QMQTT::Client(url, "", QWebSocketProtocol::VersionLatest, false, this);
-    }
-    else
-    {
-        m_client = new QMQTT::Client(host, port, false, false, this);
-    }
-
-    m_client->setClientId(clientId);
-    if (!username.isEmpty())
-    {
-        m_client->setUsername(username);
-        m_client->setPassword(password.toUtf8());
-    }
-    m_client->setKeepAlive(static_cast<quint16>(keepAlive));
-    m_client->setCleanSession(m_ui->cleanSessionCbk->isChecked());
-    m_client->setAutoReconnect(true);
-    m_client->setAutoReconnectInterval(5000);
-
-    if (!m_ui->willTopicLet->text().isEmpty())
-    {
-        m_client->setWillTopic(m_ui->willTopicLet->text());
-        m_client->setWillMessage(m_ui->willMessageLet->text().toUtf8());
-        m_client->setWillQos(m_ui->willQosCbx->currentIndex());
-        m_client->setWillRetain(m_ui->willRetainCbk->isChecked());
-    }
-
-    connect(m_client, &QMQTT::Client::connected, this, [this]() {
-        appendMessage(tr("[Connected] %1:%2").arg(m_ui->hostLet->text()).arg(m_ui->portLet->text()), false); // [已连接] %1:%2
-        updateConnectionState(true);
-        if (!m_ui->selfImAccidLet->text().isEmpty())
-        {
-            QString topic = QString("user/%1/inbox").arg(m_ui->selfImAccidLet->text());
-            m_client->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
-            appendMessage(tr("[Subscribed] %1").arg(topic), false); // [已订阅] %1
-        }
-    });
-
-    connect(m_client, &QMQTT::Client::disconnected, this, [this]() {
-        appendMessage(tr("[Disconnected]"), false); // [已断开]
-        updateConnectionState(false);
-    });
-
-    connect(m_client, &QMQTT::Client::error, this, [this](const QMQTT::ClientError error) {
-        appendMessage(tr("[Error] code: %1").arg(error), false); // [错误] 代码: %1
-    });
-
-    connect(m_client, &QMQTT::Client::sslErrors, this, [this](const QList<QSslError>& errors) {
-        for (const QSslError& err : errors)
-        {
-            appendMessage(tr("[SSL Error] %1").arg(err.errorString()), false); // [SSL 错误] %1
-        }
-    });
-
-    connect(m_client, &QMQTT::Client::received, this, [this](const QMQTT::Message& msg) {
-        appendMessage(tr("[Received] %1: %2").arg(msg.topic()).arg(QString::fromUtf8(msg.payload())), false); // [收到] %1: %2
-    });
-
-    m_client->connectToHost();
+    m_mqttMgr->connectToHost(params);
     appendMessage(tr("[Connecting] ..."), false); // [正在连接] ...
 }
 
 void MqttClientWgt::on_disconnectBtn_clicked()
 {
-    if (m_client)
-    {
-        m_client->setAutoReconnect(false);
-        m_client->disconnectFromHost();
-    }
+    m_mqttMgr->disconnectFromHost();
 }
 
 void MqttClientWgt::on_subscribeBtn_clicked()
 {
-    if (!m_client || !m_client->isConnectedToHost())
+    if (!m_mqttMgr->isConnected())
     {
         appendMessage(tr("[Error] Not connected"), false); // [错误] 未连接
         return;
@@ -157,13 +87,13 @@ void MqttClientWgt::on_subscribeBtn_clicked()
     if (imAccid.isEmpty()) return;
 
     QString topic = QString("user/%1/inbox").arg(imAccid);
-    m_client->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
+    m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
     appendMessage(tr("[Subscribe] %1 (QoS %2)").arg(topic).arg(m_ui->subQosCbx->currentText()), false); // [订阅] %1（QoS %2）
 }
 
 void MqttClientWgt::on_publishBtn_clicked()
 {
-    if (!m_client || !m_client->isConnectedToHost())
+    if (!m_mqttMgr->isConnected())
     {
         appendMessage(tr("[Error] Not connected"), false); // [错误] 未连接
         return;
@@ -171,11 +101,11 @@ void MqttClientWgt::on_publishBtn_clicked()
 
     QString target = m_ui->targetImAccidLet->text();
     QString payload = m_ui->payloadTed->toPlainText();
-    if (target.isEmpty() || payload.isEmpty()) return;
+    if (target.isEmpty() || payload.isEmpty())
+        return;
 
     QString topic = QString("user/%1/inbox").arg(target);
-    QMQTT::Message msg(0, topic, payload.toUtf8(), static_cast<quint8>(m_ui->pubQosCbx->currentIndex()));
-    m_client->publish(msg);
+    m_mqttMgr->publish(topic, payload.toUtf8(), static_cast<quint8>(m_ui->pubQosCbx->currentIndex()));
     appendMessage(tr("[Sent] %1: %2 (QoS %3)").arg(topic).arg(payload).arg(m_ui->pubQosCbx->currentText()), true); // [已发送] %1: %2（QoS %3）
 }
 
@@ -195,6 +125,60 @@ void MqttClientWgt::updateConnectionState(bool connected)
     m_ui->disconnectBtn->setEnabled(connected);
     m_ui->statusTextLbl->setText(connected ? tr("Connected") : tr("Disconnected")); // 已连接 / 已断开
     m_ui->statusTextLbl->setStyleSheet(connected ? "color: green;" : "color: red;");
+}
+
+void MqttClientWgt::slot_onTypeChanged(int index)
+{
+    Q_UNUSED(index)
+    QString type = m_ui->typeCbx->currentText();
+    if (type == "WSS")
+    {
+        m_ui->portLet->setText("8084");
+    }
+    else if (type == "WS")
+    {
+        m_ui->portLet->setText("8083");
+    }
+    else
+    {
+        m_ui->portLet->setText("1883");
+    }
+}
+
+void MqttClientWgt::slot_onConnected()
+{
+    appendMessage(tr("[Connected] %1:%2").arg(m_ui->hostLet->text()).arg(m_ui->portLet->text()), false); // [已连接] %1:%2
+    updateConnectionState(true);
+    if (!m_ui->selfImAccidLet->text().isEmpty())
+    {
+        QString topic = QString("user/%1/inbox").arg(m_ui->selfImAccidLet->text());
+        m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
+        appendMessage(tr("[Subscribed] %1").arg(topic), false); // [已订阅] %1
+    }
+}
+
+void MqttClientWgt::slot_onDisconnected()
+{
+    appendMessage(tr("[Disconnected]"), false); // [已断开]
+    updateConnectionState(false);
+}
+
+void MqttClientWgt::slot_onError(int errorCode)
+{
+    appendMessage(tr("[Error] code: %1").arg(errorCode), false); // [错误] 代码: %1
+}
+
+void MqttClientWgt::slot_onSslErrors(const QList<QSslError>& errors)
+{
+    for (const QSslError& err : errors)
+    {
+        appendMessage(tr("[SSL Error] %1").arg(err.errorString()), false); // [SSL 错误] %1
+    }
+}
+
+void MqttClientWgt::slot_onMessageReceived(const QString& topic, const QByteArray& payload)
+{
+    appendMessage(tr("[Received] %1: %2").arg(topic).arg(QString::fromUtf8(payload)), false); // [收到] %1: %2
 }
 
 void MqttClientWgt::on_langCbx_currentIndexChanged(int index)
@@ -241,8 +225,6 @@ void MqttClientWgt::applyTranslations()
     m_ui->pubQosCbx->setToolTip(tr("0: at most once (fastest)\n1: at least once (may duplicate)\n2: exactly once (slowest)")); // 0：最多一次（最快）\n1：至少一次（可能重复）\n2：恰好一次（最慢）
     m_ui->payloadTed->setToolTip(tr("JSON message payload")); // JSON 消息载荷
 
-    bool connected = m_client && m_client->isConnectedToHost();
+    bool connected = m_mqttMgr->isConnected();
     updateConnectionState(connected);
 }
-
-

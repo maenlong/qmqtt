@@ -2,12 +2,11 @@
 #define MQTTCLIENTWGT_H
 
 #include <QWidget>
+#include <QList>
 
+class QSslError;
 class QTranslator;
-
-namespace QMQTT {
-class Client;
-}
+class MqttClientMgr;
 
 namespace Ui {
 class MqttClientWgt;
@@ -38,9 +37,16 @@ private slots:
     void on_clearLogBtn_clicked();      // 清空日志
     void on_langCbx_currentIndexChanged(int index);   // 语言切换
 
+    void slot_onTypeChanged(int index);   // 连接类型切换时调整默认端口
+    void slot_onConnected();              // MQTT 连接成功
+    void slot_onDisconnected();           // MQTT 断开连接
+    void slot_onError(int errorCode);     // MQTT 错误
+    void slot_onSslErrors(const QList<QSslError>& errors);  // SSL 错误
+    void slot_onMessageReceived(const QString& topic, const QByteArray& payload);  // 收到消息
+
 private:
     Ui::MqttClientWgt* m_ui = nullptr;        // UI 实例
-    QMQTT::Client* m_client = nullptr;        // MQTT 连接实例
+    MqttClientMgr* m_mqttMgr = nullptr;       // MQTT 业务层
     QTranslator* m_translator = nullptr;      // 运行时翻译器
 };
 

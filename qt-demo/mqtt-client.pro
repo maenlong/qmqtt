@@ -9,8 +9,8 @@ TRANSLATIONS = mqtt-client_zh_CN.ts
 
 RESOURCES += mqtt-client.qrc
 FORMS += mqttclientwgt.ui
-SOURCES += main.cpp mqttclientwgt.cpp
-HEADERS += mqttclientwgt.h
+SOURCES += main.cpp mqttclientwgt.cpp mqttclientmgr.cpp
+HEADERS += mqttclientwgt.h mqttclientmgr.h
 
 win32 {
     BIN_DIR = $$shell_path($$PWD/bin)
