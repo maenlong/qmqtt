@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.1" language="zh_CN">
 <context>
@@ -17,41 +17,41 @@
         <location filename="mqttclientwgt.ui" line="54"/>
         <location filename="mqttclientwgt.ui" line="159"/>
         <source>Host:</source>
-        <translation>主机：</translation>
+        <translation>主机:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="64"/>
         <location filename="mqttclientwgt.ui" line="169"/>
         <source>Port:</source>
-        <translation>端口：</translation>
+        <translation>端口:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="44"/>
         <location filename="mqttclientwgt.ui" line="179"/>
         <source>Type:</source>
-        <translation>类型：</translation>
+        <translation>类型:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="189"/>
         <source>Client ID:</source>
-        <translation>客户端 ID：</translation>
+        <translation>客户端 ID:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="74"/>
         <location filename="mqttclientwgt.ui" line="199"/>
         <source>Username:</source>
-        <translation>用户名：</translation>
+        <translation>用户名:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="84"/>
         <location filename="mqttclientwgt.ui" line="209"/>
         <source>Password:</source>
-        <translation>密码：</translation>
+        <translation>密码:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="223"/>
         <source>KA(s):</source>
-        <translation>心跳(秒)：</translation>
+        <translation>心跳(秒):</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="230"/>
@@ -71,7 +71,7 @@
     <message>
         <location filename="mqttclientwgt.ui" line="260"/>
         <source>Status:</source>
-        <translation>状态：</translation>
+        <translation>状态:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="267"/>
@@ -92,19 +92,19 @@
     <message>
         <location filename="mqttclientwgt.ui" line="315"/>
         <source>Will Topic:</source>
-        <translation>遗嘱主题：</translation>
+        <translation>遗嘱主题:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="325"/>
         <source>Will Message:</source>
-        <translation>遗嘱消息：</translation>
+        <translation>遗嘱消息:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="335"/>
         <location filename="mqttclientwgt.ui" line="405"/>
         <location filename="mqttclientwgt.ui" line="478"/>
         <source>QoS:</source>
-        <translation>QoS：</translation>
+        <translation>QoS:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="345"/>
@@ -120,7 +120,7 @@
     <message>
         <location filename="mqttclientwgt.ui" line="395"/>
         <source>Self imAccid:</source>
-        <translation>自己的 imAccid：</translation>
+        <translation>自己的 imAccid:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="447"/>
@@ -131,7 +131,7 @@
     <message>
         <location filename="mqttclientwgt.ui" line="468"/>
         <source>Target imAccid:</source>
-        <translation>目标 imAccid：</translation>
+        <translation>目标 imAccid:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="491"/>
@@ -151,7 +151,7 @@
     <message>
         <location filename="mqttclientwgt.cpp" line="303"/>
         <source>MQTT broker address, e.g. broker.emqx.io</source>
-        <translation>MQTT 地址，如 broker.emqx.io</translation>
+        <translation>MQTT 地址,如 broker.emqx.io</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="304"/>
@@ -163,69 +163,69 @@
         <source>TCP: raw MQTT
 WS: WebSocket (port 8083)
 WSS: WebSocket + TLS (port 8084)</source>
-        <translation>TCP：原始 MQTT
-WS：WebSocket（端口 8083）
-WSS：WebSocket + TLS（端口 8084）</translation>
+        <translation>TCP:原始 MQTT
+WS:WebSocket(端口 8083)
+WSS:WebSocket + TLS(端口 8084)</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="306"/>
         <source>Unique client identifier.
 Broker uses it to distinguish clients.</source>
-        <translation>唯一客户端标识，代理用于区分客户端。</translation>
+        <translation>唯一客户端标识,代理用于区分客户端.</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="307"/>
         <source>Optional: broker authentication</source>
-        <translation>可选：代理认证用户名</translation>
+        <translation>可选:代理认证用户名</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="308"/>
         <source>Optional: broker authentication password</source>
-        <translation>可选：代理认证密码</translation>
+        <translation>可选:代理认证密码</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="309"/>
         <source>Heartbeat interval (seconds).
 If broker receives no packet within 1.5x this interval, client is considered disconnected.</source>
-        <translation>心跳间隔（秒）。超过 1.5 倍未收到数据包则视为断开。</translation>
+        <translation>心跳间隔(秒).超过 1.5 倍未收到数据包则视为断开.</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="310"/>
         <source>ON: start a fresh session, discard old subscriptions &amp; offline messages.
 OFF: broker preserves subscriptions &amp; offline messages across reconnects.</source>
-        <translation>ON：全新会话，丢弃旧订阅和离线消息。
-OFF：代理保留订阅和离线消息。</translation>
+        <translation>ON:全新会话,丢弃旧订阅和离线消息.
+OFF:代理保留订阅和离线消息.</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="311"/>
         <source>Last Will topic.
 Broker publishes this message when client disconnects unexpectedly.</source>
-        <translation>遗嘱主题，客户端异常断开时代理发布此消息。</translation>
+        <translation>遗嘱主题,客户端异常断开时代理发布此消息.</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="312"/>
         <source>Last Will payload (sent when client goes offline unexpectedly)</source>
-        <translation>遗嘱消息内容（客户端异常离线时发送）</translation>
+        <translation>遗嘱消息内容(客户端异常离线时发送)</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="313"/>
         <source>0: at most once
 1: at least once (default)
 2: exactly once</source>
-        <translation>0：最多一次
-1：至少一次（默认）
-2：恰好一次</translation>
+        <translation>0:最多一次
+1:至少一次(默认)
+2:恰好一次</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="314"/>
         <source>If checked, broker keeps this message for late subscribers.</source>
-        <translation>选中后代理保留此消息给后续订阅者。</translation>
+        <translation>选中后代理保留此消息给后续订阅者.</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="315"/>
         <source>Your IM account ID.
 Auto-subscribes to user/{imAccid}/inbox on connect.</source>
-        <translation>您的 IM 账号。连接后自动订阅 user/{imAccid}/inbox。</translation>
+        <translation>您的 IM 账号.连接后自动订阅 user/{imAccid}/inbox.</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="316"/>
@@ -233,15 +233,15 @@ Auto-subscribes to user/{imAccid}/inbox on connect.</source>
         <source>0: at most once (fastest)
 1: at least once (may duplicate)
 2: exactly once (slowest)</source>
-        <translation>0：最多一次（最快）
-1：至少一次（可能重复）
-2：恰好一次（最慢）</translation>
+        <translation>0:最多一次(最快)
+1:至少一次(可能重复)
+2:恰好一次(最慢)</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="317"/>
         <source>Recipient IM account ID.
 Message is published to user/{imAccid}/inbox.</source>
-        <translation>接收方 IM 账号。消息发布到 user/{imAccid}/inbox。</translation>
+        <translation>接收方 IM 账号.消息发布到 user/{imAccid}/inbox.</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="319"/>
@@ -252,15 +252,15 @@ Message is published to user/{imAccid}/inbox.</source>
         <location filename="mqttclientwgt.cpp" line="327"/>
         <source>Path to CA certificate file (.pem / .crt / .cer / .der).
 Leave empty to use system CA bundle.</source>
-        <translation>CA 证书文件路径（.pem / .crt / .cer / .der）。
-留空则使用系统 CA 捆绑包。</translation>
+        <translation>CA 证书文件路径(.pem / .crt / .cer / .der).
+留空则使用系统 CA 捆绑包.</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="328"/>
         <source>If checked, self-signed certificates are accepted.
 Use for testing with custom CA or self-signed servers.</source>
-        <translation>选中后接受自签名证书。
-适用于自定义 CA 或自签名服务器测试。</translation>
+        <translation>选中后接受自签名证书.
+适用于自定义 CA 或自签名服务器测试.</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="193"/>
@@ -307,12 +307,12 @@ Use for testing with custom CA or self-signed servers.</source>
     <message>
         <location filename="mqttclientwgt.cpp" line="106"/>
         <source>[Subscribe] %1 (QoS %2)</source>
-        <translation>[订阅] %1（QoS %2）</translation>
+        <translation>[订阅] %1(QoS %2)</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="151"/>
         <source>[Sent] %1: %2 (QoS %3)</source>
-        <translation>[已发送] %1: %2（QoS %3）</translation>
+        <translation>[已发送] %1: %2(QoS %3)</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="168"/>
@@ -366,12 +366,12 @@ SOCKS5 代理</translation>
     <message>
         <location filename="mqttclientwgt.cpp" line="324"/>
         <source>Optional proxy authentication username</source>
-        <translation>可选：代理认证用户名</translation>
+        <translation>可选:代理认证用户名</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.cpp" line="325"/>
         <source>Optional proxy authentication password</source>
-        <translation>可选：代理认证密码</translation>
+        <translation>可选:代理认证密码</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="434"/>
@@ -407,7 +407,7 @@ SOCKS5 代理</translation>
     <message>
         <location filename="mqttclientwgt.ui" line="120"/>
         <source>CA Certificate:</source>
-        <translation>CA 证书：</translation>
+        <translation>CA 证书:</translation>
     </message>
     <message>
         <location filename="mqttclientwgt.ui" line="130"/>

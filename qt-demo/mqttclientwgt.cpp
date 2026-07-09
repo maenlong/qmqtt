@@ -26,6 +26,7 @@ MqttClientWgt::MqttClientWgt(QWidget* parent)
     m_ui->pubQosCbx->addItems({"0", "1", "2"});
     m_ui->pubQosCbx->setCurrentIndex(1);
     m_ui->proxyTypeCbx->addItems({"None", "HTTP", "SOCKS5"});
+
     connect(m_ui->applyProxyBtn, &QPushButton::clicked,
             this, &MqttClientWgt::slot_onApplyProxy);
     connect(m_ui->typeCbx, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
@@ -97,13 +98,13 @@ void MqttClientWgt::on_subscribeBtn_clicked()
     QString imAccid = m_ui->selfImAccidLet->text();
     if (imAccid.isEmpty())
     {
-        appendMessage(tr("[Error] Self imAccid is empty"), false);
+        appendMessage(tr("[Error] Self imAccid is empty"), false); // [错误] 自己的 imAccid 为空
         return;
     }
 
     QString topic = QString("user/%1/inbox").arg(imAccid);
     m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
-    appendMessage(tr("[Subscribe] %1 (QoS %2)").arg(topic).arg(m_ui->subQosCbx->currentText()), false); // [订阅] %1（QoS %2）
+    appendMessage(tr("[Subscribe] %1 (QoS %2)").arg(topic).arg(m_ui->subQosCbx->currentText()), false); // [订阅] %1(QoS %2)
 }
 
 void MqttClientWgt::on_unsubscribeBtn_clicked()
@@ -116,13 +117,13 @@ void MqttClientWgt::on_unsubscribeBtn_clicked()
     QString imAccid = m_ui->selfImAccidLet->text();
     if (imAccid.isEmpty())
     {
-        appendMessage(tr("[Error] Self imAccid is empty"), false);
+        appendMessage(tr("[Error] Self imAccid is empty"), false); // [错误] 自己的 imAccid 为空
         return;
     }
 
     QString topic = QString("user/%1/inbox").arg(imAccid);
     m_mqttMgr->unsubscribe(topic);
-    appendMessage(tr("[Unsubscribe] %1").arg(topic), false);
+    appendMessage(tr("[Unsubscribe] %1").arg(topic), false); // [取消订阅] %1
 }
 
 void MqttClientWgt::on_publishBtn_clicked()
@@ -136,19 +137,19 @@ void MqttClientWgt::on_publishBtn_clicked()
     QString target = m_ui->targetImAccidLet->text();
     if (target.isEmpty())
     {
-        appendMessage(tr("[Error] Target imAccid is empty"), false);
+        appendMessage(tr("[Error] Target imAccid is empty"), false); // [错误] 目标 imAccid 为空
         return;
     }
     QString payload = m_ui->payloadTed->toPlainText();
     if (payload.isEmpty())
     {
-        appendMessage(tr("[Error] Payload is empty"), false);
+        appendMessage(tr("[Error] Payload is empty"), false); // [错误] 消息内容为空
         return;
     }
 
     QString topic = QString("user/%1/inbox").arg(target);
     m_mqttMgr->publish(topic, payload.toUtf8(), static_cast<quint8>(m_ui->pubQosCbx->currentIndex()));
-    appendMessage(tr("[Sent] %1: %2 (QoS %3)").arg(topic).arg(payload).arg(m_ui->pubQosCbx->currentText()), true); // [已发送] %1: %2（QoS %3）
+    appendMessage(tr("[Sent] %1: %2 (QoS %3)").arg(topic).arg(payload).arg(m_ui->pubQosCbx->currentText()), true); // [已发送] %1: %2(QoS %3)
 }
 
 void MqttClientWgt::on_clearLogBtn_clicked()
@@ -230,14 +231,14 @@ void MqttClientWgt::slot_onApplyProxy()
     if (typeIdx == 0)
     {
         QNetworkProxy::setApplicationProxy(QNetworkProxy::NoProxy);
-        appendMessage(tr("[Proxy] Disabled"), false);
+        appendMessage(tr("[Proxy] Disabled"), false); // [代理] 已禁用
         return;
     }
 
     QString host = m_ui->proxyHostLet->text().trimmed();
     if (host.isEmpty())
     {
-        appendMessage(tr("[Proxy] Host is empty"), false);
+        appendMessage(tr("[Proxy] Host is empty"), false); // [代理] 主机地址为空
         return;
     }
 
@@ -254,20 +255,20 @@ void MqttClientWgt::slot_onApplyProxy()
     }
 
     QNetworkProxy::setApplicationProxy(proxy);
-    appendMessage(tr("[Proxy] %1 %2:%3").arg(m_ui->proxyTypeCbx->currentText()).arg(host).arg(proxy.port()), false);
+    appendMessage(tr("[Proxy] %1 %2:%3").arg(m_ui->proxyTypeCbx->currentText()).arg(host).arg(proxy.port()), false); // [代理] %1 %2:%3
 }
 
 void MqttClientWgt::slot_onPingResp()
 {
     ++m_pingCount;
-    appendMessage(QString("[%1] %2 #%3").arg(QTime::currentTime().toString("HH:mm:ss")).arg(tr("[Ping] OK")).arg(m_pingCount), false);
+    appendMessage(QString("[%1] %2 #%3").arg(QTime::currentTime().toString("HH:mm:ss")).arg(tr("[Ping] OK")).arg(m_pingCount), false); // [心跳] OK
 }
 
 void MqttClientWgt::on_browseCaCertBtn_clicked()
 {
-    QString path = QFileDialog::getOpenFileName(this, tr("Select CA Certificate"),
+    QString path = QFileDialog::getOpenFileName(this, tr("Select CA Certificate"), // 选择 CA 证书
                                                  QString(),
-                                                 tr("Certificates (*.pem *.crt *.cer *.der);;All Files (*)"));
+                                                 tr("Certificates (*.pem *.crt *.cer *.der);;All Files (*)")); // 证书文件 (*.pem *.crt *.cer *.der);;所有文件 (*)
     if (!path.isEmpty())
     {
         m_ui->sslCaCertLet->setText(path);
