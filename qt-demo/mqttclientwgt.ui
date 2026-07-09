@@ -373,16 +373,35 @@
         </layout>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="subscribeBtn">
-        <property name="text">
-         <string>Subscribe</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
+       <item>
+        <widget class="QWidget" name="subscribeBtnsWgt" native="true">
+         <layout class="QHBoxLayout" name="subscribeBtnsLayout">
+          <property name="spacing">
+           <number>10</number>
+          </property>
+          <property name="margin" stdset="0">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="subscribeBtn">
+            <property name="text">
+             <string>Subscribe</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="unsubscribeBtn">
+            <property name="text">
+             <string>Unsubscribe</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
    <item>
     <widget class="QGroupBox" name="publishGrp">
      <property name="title">
@@ -528,6 +547,7 @@
   <tabstop>connectBtn</tabstop>
   <tabstop>disconnectBtn</tabstop>
   <tabstop>subscribeBtn</tabstop>
+  <tabstop>unsubscribeBtn</tabstop>
   <tabstop>targetImAccidLet</tabstop>
   <tabstop>payloadTed</tabstop>
   <tabstop>publishBtn</tabstop>

@@ -41,6 +41,7 @@ public:
     void connectToHost(const MqttConnectionParams& params);
     void disconnectFromHost();
     void subscribe(const QString& topic, quint8 qos);
+    void unsubscribe(const QString& topic);
     void publish(const QString& topic, const QByteArray& payload, quint8 qos);
     bool isConnected() const;
 

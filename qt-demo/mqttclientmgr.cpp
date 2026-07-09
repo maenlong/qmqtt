@@ -53,6 +53,14 @@ void MqttClientMgr::subscribe(const QString& topic, quint8 qos)
     }
 }
 
+void MqttClientMgr::unsubscribe(const QString& topic)
+{
+    if (m_client)
+    {
+        m_client->unsubscribe(topic);
+    }
+}
+
 void MqttClientMgr::publish(const QString& topic, const QByteArray& payload, quint8 qos)
 {
     if (m_client)

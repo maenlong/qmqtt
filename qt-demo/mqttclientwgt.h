@@ -33,6 +33,7 @@ private slots:
     void on_connectBtn_clicked();       // 连接/重连 MQTT 代理
     void on_disconnectBtn_clicked();    // 断开连接
     void on_subscribeBtn_clicked();     // 手动订阅
+    void on_unsubscribeBtn_clicked();   // 取消订阅
     void on_publishBtn_clicked();       // 发布消息
     void on_clearLogBtn_clicked();      // 清空日志
     void on_langCbx_currentIndexChanged(int index);   // 语言切换

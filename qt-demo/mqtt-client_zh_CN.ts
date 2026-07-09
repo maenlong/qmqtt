@@ -345,5 +345,25 @@ SOCKS5 代理</translation>
         <source>Optional proxy authentication password</source>
         <translation>可选：代理认证密码</translation>
     </message>
+    <message>
+        <source>Unsubscribe</source>
+        <translation>取消订阅</translation>
+    </message>
+    <message>
+        <source>[Unsubscribe] %1</source>
+        <translation>[取消订阅] %1</translation>
+    </message>
+    <message>
+        <source>[Error] Self imAccid is empty</source>
+        <translation>[错误] 自己的 imAccid 为空</translation>
+    </message>
+    <message>
+        <source>[Error] Target imAccid is empty</source>
+        <translation>[错误] 目标 imAccid 为空</translation>
+    </message>
+    <message>
+        <source>[Error] Payload is empty</source>
+        <translation>[错误] 消息内容为空</translation>
+    </message>
 </context>
 </TS>

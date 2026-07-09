@@ -88,11 +88,34 @@ void MqttClientWgt::on_subscribeBtn_clicked()
         return;
     }
     QString imAccid = m_ui->selfImAccidLet->text();
-    if (imAccid.isEmpty()) return;
+    if (imAccid.isEmpty())
+    {
+        appendMessage(tr("[Error] Self imAccid is empty"), false);
+        return;
+    }
 
     QString topic = QString("user/%1/inbox").arg(imAccid);
     m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
     appendMessage(tr("[Subscribe] %1 (QoS %2)").arg(topic).arg(m_ui->subQosCbx->currentText()), false); // [订阅] %1（QoS %2）
+}
+
+void MqttClientWgt::on_unsubscribeBtn_clicked()
+{
+    if (!m_mqttMgr->isConnected())
+    {
+        appendMessage(tr("[Error] Not connected"), false); // [错误] 未连接
+        return;
+    }
+    QString imAccid = m_ui->selfImAccidLet->text();
+    if (imAccid.isEmpty())
+    {
+        appendMessage(tr("[Error] Self imAccid is empty"), false);
+        return;
+    }
+
+    QString topic = QString("user/%1/inbox").arg(imAccid);
+    m_mqttMgr->unsubscribe(topic);
+    appendMessage(tr("[Unsubscribe] %1").arg(topic), false);
 }
 
 void MqttClientWgt::on_publishBtn_clicked()
@@ -104,9 +127,17 @@ void MqttClientWgt::on_publishBtn_clicked()
     }
 
     QString target = m_ui->targetImAccidLet->text();
-    QString payload = m_ui->payloadTed->toPlainText();
-    if (target.isEmpty() || payload.isEmpty())
+    if (target.isEmpty())
+    {
+        appendMessage(tr("[Error] Target imAccid is empty"), false);
         return;
+    }
+    QString payload = m_ui->payloadTed->toPlainText();
+    if (payload.isEmpty())
+    {
+        appendMessage(tr("[Error] Payload is empty"), false);
+        return;
+    }
 
     QString topic = QString("user/%1/inbox").arg(target);
     m_mqttMgr->publish(topic, payload.toUtf8(), static_cast<quint8>(m_ui->pubQosCbx->currentIndex()));
