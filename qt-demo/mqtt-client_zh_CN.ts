@@ -365,5 +365,37 @@ SOCKS5 代理</translation>
         <source>[Error] Payload is empty</source>
         <translation>[错误] 消息内容为空</translation>
     </message>
+    <message>
+        <source>SSL</source>
+        <translation>SSL</translation>
+    </message>
+    <message>
+        <source>CA Certificate:</source>
+        <translation>CA 证书：</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>浏览...</translation>
+    </message>
+    <message>
+        <source>Ignore Self-Signed</source>
+        <translation>忽略自签名</translation>
+    </message>
+    <message>
+        <source>Path to CA certificate file (.pem / .crt / .cer / .der).\nLeave empty to use system CA bundle.</source>
+        <translation>CA 证书文件路径（.pem / .crt / .cer / .der）。\n留空则使用系统 CA 捆绑包。</translation>
+    </message>
+    <message>
+        <source>If checked, self-signed certificates are accepted.\nUse for testing with custom CA or self-signed servers.</source>
+        <translation>选中后接受自签名证书，适用于自定义 CA 或自签名服务器测试。</translation>
+    </message>
+    <message>
+        <source>Select CA Certificate</source>
+        <translation>选择 CA 证书</translation>
+    </message>
+    <message>
+        <source>Certificates (*.pem *.crt *.cer *.der);;All Files (*)</source>
+        <translation>证书文件 (*.pem *.crt *.cer *.der);;所有文件 (*)</translation>
+    </message>
 </context>
 </TS>

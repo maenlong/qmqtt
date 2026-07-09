@@ -1,6 +1,8 @@
 #include "mqttclientmgr.h"
 #include "qmqtt.h"
 #include <QSslError>
+#include <QSslConfiguration>
+#include <QSslCertificate>
 #include <QtWebSockets/QWebSocketProtocol>
 
 MqttClientMgr::MqttClientMgr(QObject* parent)
@@ -113,6 +115,22 @@ void MqttClientMgr::applyClientConfig(const MqttConnectionParams& params)
         m_client->setWillMessage(params.willMessage.toUtf8());
         m_client->setWillQos(static_cast<quint8>(params.willQos));
         m_client->setWillRetain(params.willRetain);
+    }
+
+    if (!params.sslCaCertPath.isEmpty())
+    {
+        QSslConfiguration sslConfig = m_client->sslConfiguration();
+        QList<QSslCertificate> caCerts = QSslCertificate::fromPath(params.sslCaCertPath);
+        if (!caCerts.isEmpty())
+        {
+            sslConfig.setCaCertificates(caCerts);
+            m_client->setSslConfiguration(sslConfig);
+        }
+    }
+
+    if (params.ignoreSelfSigned)
+    {
+        m_client->ignoreSslErrors();
     }
 }
 

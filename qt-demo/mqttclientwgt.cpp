@@ -6,6 +6,7 @@
 #include <QUuid>
 #include <QSslError>
 #include <QNetworkProxy>
+#include <QFileDialog>
 
 MqttClientWgt::MqttClientWgt(QWidget* parent)
     : QWidget(parent)
@@ -66,6 +67,8 @@ void MqttClientWgt::on_connectBtn_clicked()
     params.keepAlive = m_ui->keepAliveLet->text().toInt();
     params.type = m_ui->typeCbx->currentIndex();
     params.cleanSession = m_ui->cleanSessionCbk->isChecked();
+    params.sslCaCertPath = m_ui->sslCaCertLet->text();
+    params.ignoreSelfSigned = m_ui->ignoreSelfSignedCbk->isChecked();
     params.willTopic = m_ui->willTopicLet->text();
     params.willMessage = m_ui->willMessageLet->text();
     params.willQos = m_ui->willQosCbx->currentIndex();
@@ -249,6 +252,17 @@ void MqttClientWgt::slot_onApplyProxy()
     appendMessage(tr("[Proxy] %1 %2:%3").arg(m_ui->proxyTypeCbx->currentText()).arg(host).arg(proxy.port()), false);
 }
 
+void MqttClientWgt::on_browseCaCertBtn_clicked()
+{
+    QString path = QFileDialog::getOpenFileName(this, tr("Select CA Certificate"),
+                                                 QString(),
+                                                 tr("Certificates (*.pem *.crt *.cer *.der);;All Files (*)"));
+    if (!path.isEmpty())
+    {
+        m_ui->sslCaCertLet->setText(path);
+    }
+}
+
 void MqttClientWgt::on_langCbx_currentIndexChanged(int index)
 {
     qApp->removeTranslator(m_translator);
@@ -298,6 +312,9 @@ void MqttClientWgt::applyTranslations()
     m_ui->proxyPortLet->setToolTip(tr("Proxy server port")); // 代理服务器端口
     m_ui->proxyUsernameLet->setToolTip(tr("Optional proxy authentication username")); // 可选：代理认证用户名
     m_ui->proxyPasswordLet->setToolTip(tr("Optional proxy authentication password")); // 可选：代理认证密码
+
+    m_ui->sslCaCertLet->setToolTip(tr("Path to CA certificate file (.pem / .crt / .cer / .der).\nLeave empty to use system CA bundle.")); // CA 证书文件路径，留空使用系统 CA
+    m_ui->ignoreSelfSignedCbk->setToolTip(tr("If checked, self-signed certificates are accepted.\nUse for testing with custom CA or self-signed servers.")); // 选中后接受自签名证书，用于测试环境
 
     bool connected = m_mqttMgr->isConnected();
     updateConnectionState(connected);

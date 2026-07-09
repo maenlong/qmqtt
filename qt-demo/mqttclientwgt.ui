@@ -101,6 +101,45 @@
        </item>
       </layout>
      </widget>
+     </item>
+    <item>
+     <widget class="QGroupBox" name="sslGrp">
+      <property name="title">
+       <string>SSL</string>
+      </property>
+      <layout class="QHBoxLayout" name="sslLayout">
+       <property name="margin" stdset="0">
+        <number>10</number>
+       </property>
+       <property name="spacing">
+        <number>10</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="sslCaCertTipLbl">
+         <property name="text">
+          <string>CA Certificate:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="sslCaCertLet"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="browseCaCertBtn">
+         <property name="text">
+          <string>Browse...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="ignoreSelfSignedCbk">
+         <property name="text">
+          <string>Ignore Self-Signed</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </item>
     <item>
      <widget class="QGroupBox" name="connectionGrp">
@@ -537,6 +576,9 @@
    <tabstop>proxyUsernameLet</tabstop>
    <tabstop>proxyPasswordLet</tabstop>
    <tabstop>applyProxyBtn</tabstop>
+   <tabstop>sslCaCertLet</tabstop>
+   <tabstop>browseCaCertBtn</tabstop>
+   <tabstop>ignoreSelfSignedCbk</tabstop>
    <tabstop>hostLet</tabstop>
   <tabstop>portLet</tabstop>
   <tabstop>typeCbx</tabstop>

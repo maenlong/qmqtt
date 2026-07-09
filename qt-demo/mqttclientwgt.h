@@ -37,6 +37,7 @@ private slots:
     void on_publishBtn_clicked();       // 发布消息
     void on_clearLogBtn_clicked();      // 清空日志
     void on_langCbx_currentIndexChanged(int index);   // 语言切换
+    void on_browseCaCertBtn_clicked();                // 浏览 CA 证书文件
 
     void slot_onTypeChanged(int index);   // 连接类型切换时调整默认端口
     void slot_onConnected();              // MQTT 连接成功

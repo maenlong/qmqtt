@@ -23,6 +23,8 @@ struct MqttConnectionParams
     QString password;
     int     keepAlive;
     bool    cleanSession;
+    QString sslCaCertPath;
+    bool    ignoreSelfSigned = false;
     QString willTopic;
     QString willMessage;
     int     willQos;
