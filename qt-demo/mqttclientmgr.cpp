@@ -156,4 +156,7 @@ void MqttClientMgr::forwardClientSignals()
             this, [this](const QMQTT::Message& msg) {
         emit sig_messageReceived(msg.topic(), msg.payload());
     });
+
+    connect(m_client, &QMQTT::Client::pingresp,
+            this, &MqttClientMgr::sig_pingresp);
 }

@@ -7,6 +7,7 @@
 #include <QSslError>
 #include <QNetworkProxy>
 #include <QFileDialog>
+#include <QTime>
 
 MqttClientWgt::MqttClientWgt(QWidget* parent)
     : QWidget(parent)
@@ -44,6 +45,9 @@ MqttClientWgt::MqttClientWgt(QWidget* parent)
 
     connect(m_mqttMgr, &MqttClientMgr::sig_messageReceived,
             this, &MqttClientWgt::slot_onMessageReceived);
+
+    connect(m_mqttMgr, &MqttClientMgr::sig_pingresp,
+            this, &MqttClientWgt::slot_onPingResp);
 
     m_ui->mainLayout->setStretch(m_ui->mainLayout->indexOf(m_ui->logGrp), 1);
     m_ui->langCbx->addItems({"EN", "中文"});
@@ -185,6 +189,7 @@ void MqttClientWgt::slot_onTypeChanged(int index)
 
 void MqttClientWgt::slot_onConnected()
 {
+    m_pingCount = 0;
     appendMessage(tr("[Connected] %1:%2").arg(m_ui->hostLet->text()).arg(m_ui->portLet->text()), false); // [已连接] %1:%2
     updateConnectionState(true);
     if (!m_ui->selfImAccidLet->text().isEmpty())
@@ -250,6 +255,12 @@ void MqttClientWgt::slot_onApplyProxy()
 
     QNetworkProxy::setApplicationProxy(proxy);
     appendMessage(tr("[Proxy] %1 %2:%3").arg(m_ui->proxyTypeCbx->currentText()).arg(host).arg(proxy.port()), false);
+}
+
+void MqttClientWgt::slot_onPingResp()
+{
+    ++m_pingCount;
+    appendMessage(QString("[%1] %2 #%3").arg(QTime::currentTime().toString("HH:mm:ss")).arg(tr("[Ping] OK")).arg(m_pingCount), false);
 }
 
 void MqttClientWgt::on_browseCaCertBtn_clicked()

@@ -53,6 +53,7 @@ signals:
     void sig_error(int errorCode);
     void sig_sslErrors(const QList<QSslError>& errors);
     void sig_messageReceived(const QString& topic, const QByteArray& payload);
+    void sig_pingresp();
 
 private:
     void createClient(const MqttConnectionParams& params);

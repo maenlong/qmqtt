@@ -397,5 +397,9 @@ SOCKS5 代理</translation>
         <source>Certificates (*.pem *.crt *.cer *.der);;All Files (*)</source>
         <translation>证书文件 (*.pem *.crt *.cer *.der);;所有文件 (*)</translation>
     </message>
+    <message>
+        <source>[Ping] OK</source>
+        <translation>[心跳] OK</translation>
+    </message>
 </context>
 </TS>

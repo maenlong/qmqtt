@@ -45,12 +45,14 @@ private slots:
     void slot_onError(int errorCode);     // MQTT 错误
     void slot_onSslErrors(const QList<QSslError>& errors);  // SSL 错误
     void slot_onMessageReceived(const QString& topic, const QByteArray& payload);  // 收到消息
+    void slot_onPingResp();                               // Ping 响应确认
     void slot_onApplyProxy();                 // 应用代理设置
 
 private:
     Ui::MqttClientWgt* m_ui = nullptr;        // UI 实例
     MqttClientMgr* m_mqttMgr = nullptr;       // MQTT 业务层
     QTranslator* m_translator = nullptr;      // 运行时翻译器
+    int m_pingCount = 0;                      // Ping 计数器
 };
 
 #endif
