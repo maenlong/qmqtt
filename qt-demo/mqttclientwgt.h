@@ -43,6 +43,7 @@ private slots:
     void slot_onError(int errorCode);     // MQTT 错误
     void slot_onSslErrors(const QList<QSslError>& errors);  // SSL 错误
     void slot_onMessageReceived(const QString& topic, const QByteArray& payload);  // 收到消息
+    void slot_onApplyProxy();                 // 应用代理设置
 
 private:
     Ui::MqttClientWgt* m_ui = nullptr;        // UI 实例

@@ -301,5 +301,49 @@ Message is published to user/{imAccid}/inbox.</source>
         <source>Connected</source>
         <translation>已连接</translation>
     </message>
+    <message>
+        <source>Proxy</source>
+        <translation>代理</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>应用</translation>
+    </message>
+    <message>
+        <source>[Proxy] Disabled</source>
+        <translation>[代理] 已禁用</translation>
+    </message>
+    <message>
+        <source>[Proxy] Host is empty</source>
+        <translation>[代理] 主机地址为空</translation>
+    </message>
+    <message>
+        <source>[Proxy] %1 %2:%3</source>
+        <translation>[代理] %1 %2:%3</translation>
+    </message>
+    <message>
+        <source>None: no proxy
+HTTP: HTTP CONNECT
+SOCKS5: SOCKS5 proxy</source>
+        <translation>无代理
+HTTP CONNECT
+SOCKS5 代理</translation>
+    </message>
+    <message>
+        <source>Proxy server hostname or IP address</source>
+        <translation>代理服务器主机名或 IP</translation>
+    </message>
+    <message>
+        <source>Proxy server port</source>
+        <translation>代理服务器端口</translation>
+    </message>
+    <message>
+        <source>Optional proxy authentication username</source>
+        <translation>可选：代理认证用户名</translation>
+    </message>
+    <message>
+        <source>Optional proxy authentication password</source>
+        <translation>可选：代理认证密码</translation>
+    </message>
 </context>
 </TS>

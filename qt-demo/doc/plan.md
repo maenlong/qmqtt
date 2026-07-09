@@ -1,71 +1,101 @@
-# MQTT Demo — MVP 规划
+# MQTT Demo — 开发规划
 
 ## 目标
 
 验证 MQTT 信令通道的技术可行性，回答以下问题：
 
-- EMQX qmqtt 能否稳定连接自建 Broker（tcp / wss）？
+- EMQX qmqtt 能否稳定连接自建 Broker（tcp / ws / wss）？
 - 用户名+密码认证是否正常工作？
 - JSON 格式消息能否正确收发？
 - Topic 路由（`user/{imAccid}/inbox`）是否可用？
-- 代理模式下连接是否正常？
 
-## MVP 范围
+## 已完成
 
-不涉及具体信令内容、NIM 兼容、去重、重连逻辑。
-
-### 连接
-
-- [x] tcp 直连（已验证 ✅ test.mosquitto.org:1883 连接/订阅/发布/接收正常）
-- [ ] wss 连接（443 端口 + TLS）
-- [ ] 用户名（imAccid）、密码（imToken）
-- [x] Keep Alive 30s
-- [x] Clean Session true
-- [x] Client ID 按格式生成：`{平台前缀}-{UUID前8位}`
-- [ ] 代理支持（EMQX qmqtt 不支持 QNetworkProxy）
-- [x] 断线自动重连（EMQX qmqtt 内置，指数退避）
-
-### 消息
-
-- [x] QoS 1（已验证 ✅）
-- [ ] Topic 格式：`user/{targetImAccid}/inbox`
-- [ ] JSON 消息体（包含基本字段即可）
-
-### 收发
-
-- [ ] 订阅 `user/{selfImAccid}/inbox`
-- [ ] 向任意 `user/{targetImAccid}/inbox` 发布消息
-- [ ] 消息日志显示 JSON 内容
-
-## 不包含（后续再做）
-
-| 内容 | 说明 |
-|------|------|
-| 具体信令指令（CS/CSA/CSR/...） | MVP 只发 JSON，不关心语义 |
-| SessionID UUID v4 | 后续信令业务再加 |
-| 双通道去重 | NIM 通道集成时再做 |
-| `~` 分隔格式解析 | NIM 兼容阶段再做 |
-| 呼叫状态机 / 振铃 UI | 业务逻辑阶段再做 |
-
-## 文件结构
+### 项目结构
 
 ```
 qt-demo/
 ├── doc/
 │   └── plan.md
-├── main.cpp
-├── mainwgt.h / mainwgt.cpp / mainwgt.ui
-├── mqtt-client.pro
-└── build.bat
+├── main.cpp                    # 程序入口
+├── mqttclientwgt.h / .cpp      # UI 层，依赖 MqttClientMgr
+├── mqttclientwgt.ui             # UI 布局
+├── mqttclientmgr.h / .cpp      # MQTT 业务层，纯 QObject，与 UI 无关
+├── mqtt-client.pro             # Qt 工程文件
+├── mqtt-client.qrc             # 资源文件（i18n .qm）
+├── mqtt-client_zh_CN.ts / .qm  # 中文翻译文件
+└── build_*.bat / build_*.sh    # 构建脚本
 ```
 
-## 界面布局
+### 架构
 
-- Connection 组：Host / Port / Type (TCP/WSS) / Client ID / Username / Password / Keep Alive / Proxy / Connect / Disconnect / Status
-- Subscribe 组：Self imAccid / Subscribe 按钮
-- Publish 组：Target imAccid / JSON 输入框 / Publish 按钮
-- Log 组：只读消息日志
+```
+用户输入 → MqttClientWgt (UI)
+                ↓  收集参数
+           MqttClientMgr (业务层)
+                ↓
+           QMQTT::Client (SDK)
+```
 
-## 交付物
+- `MqttClientMgr`：纯 QObject，封装连接/订阅/发布/断开，通过 signals 通知结果，不包含任何 UI 代码。
+- `MqttClientWgt`：Qt Widgets 界面，只做两件事：① 从 UI 控件收集参数传给 `MqttClientMgr`；② 将 `MqttClientMgr` 的信号显示到日志/状态栏。
 
-一个可运行的 Qt 程序，基于 EMQX qmqtt，能连接到指定的 MQTT Broker（tcp/wss），用账号密码认证，向目标用户的 inbox topic 发送 JSON 消息并接收。
+### 功能状态
+
+#### 连接
+- [x] TCP 直连（已验证 broker.emqx.io:1883 连接/订阅/发布/接收正常）
+- [x] WS（WebSocket）连接
+- [x] WSS（WebSocket + TLS）连接
+- [x] 用户名/密码认证
+- [x] Keep Alive 30s
+- [x] Clean Session true/false
+- [x] Client ID 按格式生成 `qt_demo_{UUID前8位}`
+- [x] 断线自动重连（EMQX qmqtt 内置，指数退避，间隔 5s）
+- [x] 代理支持（None / HTTP / SOCKS5，全局 `QNetworkProxy::setApplicationProxy()`）
+
+#### 遗嘱消息（Last Will）
+- [x] Will Topic / Will Message / QoS / Retain
+
+#### 消息
+- [x] QoS 0/1/2（已验证 QoS 1）
+- [x] Topic 格式：`user/{targetImAccid}/inbox`
+- [x] JSON 消息体
+
+#### 收发
+- [x] 订阅 `user/{selfImAccid}/inbox`
+- [x] 向任意 `user/{targetImAccid}/inbox` 发布消息
+- [x] 消息日志显示 JSON 内容
+
+#### 国际化
+- [x] 运行时可切换 EN / 中文
+- [x] UI 控件标签翻译
+- [x] Tooltip 翻译
+- [x] 日志消息翻译
+
+### 约定
+
+- 类命名：`MqttClientWgt`、`MqttClientMgr`，前缀 `Mqtt` + 模块名
+- 槽函数：`on_控件名_信号名()`（Qt Designer 自动关联）、`slot_onXxx()`（手动连接）
+- 信号：`sig_xxx()` 前缀
+- 成员变量：`m_` 前缀
+- 命名空间：`Ui::MqttClientWgt`（Qt Designer 生成）
+- i18n：`changeEvent()` + `applyTranslations()`
+
+## 待完成
+
+| 内容 | 说明 | 优先级 |
+|------|------|--------|
+| CLI 入口 + 命令分发 | `main.cpp` 分流 GUI / CLI 模式，`CliCommandHandler` 解析命令输出 JSON Lines | P0 |
+| CLI 自动测试套件 | `CliAutoTester` 用 `QProcess` 发命令给自身，对比预期，输出 PASS/FAIL | P1 |
+| config.ini 配置 | 从 ini 读取 broker 地址和认证信息，避免重复输入 | P2 |
+| IPC 后台驻守 | `--headless` + `QLocalServer` IPC，使命令行可操作持久连接 | P3 |
+
+## 不包含
+
+| 内容 | 说明 |
+|------|------|
+| 具体信令指令（CS/CSA/CSR/...） | 只发 JSON，不关心语义 |
+| SessionID UUID v4 | 后续信令业务再加 |
+| 双通道去重 | NIM 通道集成时再做 |
+| `~` 分隔格式解析 | NIM 兼容阶段再做 |
+| 呼叫状态机 / 振铃 UI | 业务逻辑阶段再做 |

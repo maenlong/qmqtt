@@ -5,6 +5,7 @@
 #include <QTranslator>
 #include <QUuid>
 #include <QSslError>
+#include <QNetworkProxy>
 
 MqttClientWgt::MqttClientWgt(QWidget* parent)
     : QWidget(parent)
@@ -22,6 +23,9 @@ MqttClientWgt::MqttClientWgt(QWidget* parent)
     m_ui->subQosCbx->setCurrentIndex(1);
     m_ui->pubQosCbx->addItems({"0", "1", "2"});
     m_ui->pubQosCbx->setCurrentIndex(1);
+    m_ui->proxyTypeCbx->addItems({"None", "HTTP", "SOCKS5"});
+    connect(m_ui->applyProxyBtn, &QPushButton::clicked,
+            this, &MqttClientWgt::slot_onApplyProxy);
     connect(m_ui->typeCbx, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &MqttClientWgt::slot_onTypeChanged);
 
@@ -181,6 +185,39 @@ void MqttClientWgt::slot_onMessageReceived(const QString& topic, const QByteArra
     appendMessage(tr("[Received] %1: %2").arg(topic).arg(QString::fromUtf8(payload)), false); // [收到] %1: %2
 }
 
+void MqttClientWgt::slot_onApplyProxy()
+{
+    int typeIdx = m_ui->proxyTypeCbx->currentIndex();
+    if (typeIdx == 0)
+    {
+        QNetworkProxy::setApplicationProxy(QNetworkProxy::NoProxy);
+        appendMessage(tr("[Proxy] Disabled"), false);
+        return;
+    }
+
+    QString host = m_ui->proxyHostLet->text().trimmed();
+    if (host.isEmpty())
+    {
+        appendMessage(tr("[Proxy] Host is empty"), false);
+        return;
+    }
+
+    QNetworkProxy proxy;
+    proxy.setType(typeIdx == 1 ? QNetworkProxy::HttpProxy : QNetworkProxy::Socks5Proxy);
+    proxy.setHostName(host);
+    proxy.setPort(static_cast<quint16>(m_ui->proxyPortLet->text().toUShort()));
+
+    QString username = m_ui->proxyUsernameLet->text().trimmed();
+    if (!username.isEmpty())
+    {
+        proxy.setUser(username);
+        proxy.setPassword(m_ui->proxyPasswordLet->text());
+    }
+
+    QNetworkProxy::setApplicationProxy(proxy);
+    appendMessage(tr("[Proxy] %1 %2:%3").arg(m_ui->proxyTypeCbx->currentText()).arg(host).arg(proxy.port()), false);
+}
+
 void MqttClientWgt::on_langCbx_currentIndexChanged(int index)
 {
     qApp->removeTranslator(m_translator);
@@ -224,6 +261,12 @@ void MqttClientWgt::applyTranslations()
     m_ui->targetImAccidLet->setToolTip(tr("Recipient IM account ID.\nMessage is published to user/{imAccid}/inbox.")); // 接收方 IM 账号。消息发布到 user/{imAccid}/inbox。
     m_ui->pubQosCbx->setToolTip(tr("0: at most once (fastest)\n1: at least once (may duplicate)\n2: exactly once (slowest)")); // 0：最多一次（最快）\n1：至少一次（可能重复）\n2：恰好一次（最慢）
     m_ui->payloadTed->setToolTip(tr("JSON message payload")); // JSON 消息载荷
+
+    m_ui->proxyTypeCbx->setToolTip(tr("None: no proxy\nHTTP: HTTP CONNECT\nSOCKS5: SOCKS5 proxy")); // 无代理 / HTTP CONNECT / SOCKS5
+    m_ui->proxyHostLet->setToolTip(tr("Proxy server hostname or IP address")); // 代理服务器主机名或 IP
+    m_ui->proxyPortLet->setToolTip(tr("Proxy server port")); // 代理服务器端口
+    m_ui->proxyUsernameLet->setToolTip(tr("Optional proxy authentication username")); // 可选：代理认证用户名
+    m_ui->proxyPasswordLet->setToolTip(tr("Optional proxy authentication password")); // 可选：代理认证密码
 
     bool connected = m_mqttMgr->isConnected();
     updateConnectionState(connected);
