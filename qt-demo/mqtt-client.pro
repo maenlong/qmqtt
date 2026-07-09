@@ -8,9 +8,9 @@ include($$PWD/../qmqtt.pri)
 TRANSLATIONS = mqtt-client_zh_CN.ts
 
 RESOURCES += mqtt-client.qrc
-FORMS += mainwgt.ui
-SOURCES += main.cpp mainwgt.cpp
-HEADERS += mainwgt.h
+FORMS += mqttclientwgt.ui
+SOURCES += main.cpp mqttclientwgt.cpp
+HEADERS += mqttclientwgt.h
 
 win32 {
     BIN_DIR = $$shell_path($$PWD/bin)

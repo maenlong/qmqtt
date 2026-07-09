@@ -1,14 +1,10 @@
-#include <QApplication>
-#include <QTranslator>
-#include "mainwgt.h"
+﻿#include <QApplication>
+#include "mqttclientwgt.h"
 
 int main(int argc, char* argv[])
 {
     QApplication a(argc, argv);
-    QTranslator translator;
-    if (translator.load("mqtt-client_zh_CN.qm", ":/i18n/"))
-        a.installTranslator(&translator);
-    MainWgt w;
+    MqttClientWgt w;
     w.show();
     return a.exec();
 }
