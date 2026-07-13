@@ -19,7 +19,8 @@ MqttClientWgt::MqttClientWgt(QWidget* parent)
     m_ui->setupUi(this);
     m_ui->hostLet->setText("broker.emqx.io");
     m_ui->portLet->setText("1883");
-    m_ui->clientIdLet->setText("qt_demo_" + QUuid::createUuid().toString().left(8));
+    QString uuidFragment = QUuid::createUuid().toString(QUuid::WithoutBraces).left(8);
+    m_ui->clientIdLet->setText(QString("qt_demo_%1").arg(uuidFragment));
     m_ui->keepAliveLet->setText("30");
     m_ui->typeCbx->addItem(QString("TCP"), static_cast<int>(MqttConnectionTcp));
     m_ui->typeCbx->addItem(QString("WS"), static_cast<int>(MqttConnectionWs));
