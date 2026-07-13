@@ -16,4 +16,5 @@ qt-demo/Makefile.Release
 qt-demo/.qtc_clangd/
 qt-demo/mqtt-client.app/
 qt-demo/*.vcxproj*
+qt-demo/build/
 .qmake.stash

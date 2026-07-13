@@ -45,6 +45,32 @@ qt-demo/
 - `MqttProxyManager`：校验并应用 None/HTTP/SOCKS5 全局代理配置，不依赖 UI。
 - `MqttClientWgt`：Qt Widgets 界面，只负责收集参数、调用可复用模块并展示日志/状态。
 
+### 构建
+
+构建脚本统一使用 `qt-demo/build/` 作为 shadow-build 目录，不在源码目录生成 Makefile、中间文件或部署产物。
+
+工具链选择规则：
+
+1. 脚本顶部的 `CONFIG_QTDIR`（Windows 另有 `CONFIG_VS_DIR`）非空时，严格使用指定目录并输出实际版本。
+2. 配置目录为空时，扫描 `QTDIR` / `QMAKE` / `PATH` 和平台常见安装目录，列出全部 Qt 版本与完整路径后由用户选择。
+3. Windows 在 `CONFIG_VS_DIR` 为空时，通过 `vswhere` 列出全部带 C++ 工具的 Visual Studio 版本后由用户选择。
+4. 自动化调用可通过 `QT_CHOICE` / `VS_CHOICE` 预先指定选择序号。
+
+```bat
+:: Windows（MSVC，默认 x86；在脚本顶部设置固定 Qt/VS 目录）
+build_win.bat
+```
+
+```bash
+# Linux（在脚本顶部设置固定 Qt 目录）
+bash build_linux.sh
+
+# macOS（脚本按 CPU 架构提供默认固定目录）
+bash build_macos.sh
+```
+
+将脚本顶部的固定目录设为空后，环境变量只参与候选版本发现，不会绕过版本列表与用户选择。`BUILD_DIR`、`BUILD_ARCH`、`JOBS` 仍可覆盖构建参数。
+
 ### 功能状态
 
 #### 连接
