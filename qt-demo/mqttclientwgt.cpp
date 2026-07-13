@@ -9,6 +9,7 @@
 #include <QSslError>
 #include <QFileDialog>
 #include <QIntValidator>
+#include <QSignalBlocker>
 #include <QStyle>
 #include <QTime>
 
@@ -347,8 +348,17 @@ void MqttClientWgt::on_langCbx_currentIndexChanged(int index)
         {
             m_translator = new QTranslator(this);
         }
-        m_translator->load("mqtt-client_zh_CN.qm", ":/i18n/");
-        qApp->installTranslator(m_translator);
+        QString translationPath = QString(":/i18n/mqtt-client_zh_CN.qm");
+        if (m_translator->load(translationPath))
+        {
+            qApp->installTranslator(m_translator);
+        }
+        else
+        {
+            QSignalBlocker blocker(m_ui->langCbx);
+            m_ui->langCbx->setCurrentIndex(0);
+            appendMessage(tr("[Error] Failed to load translation: %1").arg(translationPath), false); // [错误] 翻译资源加载失败: %1
+        }
     }
 }
 
