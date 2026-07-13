@@ -90,29 +90,35 @@ void MqttClientMgr::disconnectFromHost()
     }
 }
 
-void MqttClientMgr::subscribe(const QString& topic, quint8 qos)
+bool MqttClientMgr::subscribe(const QString& topic, quint8 qos)
 {
-    if (m_client)
+    bool success = isConnected() && !topic.isEmpty() && qos <= 2;
+    if (success)
     {
         m_client->subscribe(topic, qos);
     }
+    return success;
 }
 
-void MqttClientMgr::unsubscribe(const QString& topic)
+bool MqttClientMgr::unsubscribe(const QString& topic)
 {
-    if (m_client)
+    bool success = isConnected() && !topic.isEmpty();
+    if (success)
     {
         m_client->unsubscribe(topic);
     }
+    return success;
 }
 
-void MqttClientMgr::publish(const QString& topic, const QByteArray& payload, quint8 qos)
+bool MqttClientMgr::publish(const QString& topic, const QByteArray& payload, quint8 qos)
 {
-    if (m_client)
+    bool success = isConnected() && !topic.isEmpty() && qos <= 2;
+    if (success)
     {
         QMQTT::Message msg(0, topic, payload, qos);
         m_client->publish(msg);
     }
+    return success;
 }
 
 bool MqttClientMgr::isConnected() const

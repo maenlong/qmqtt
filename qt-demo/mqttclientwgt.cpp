@@ -139,8 +139,14 @@ void MqttClientWgt::on_subscribeBtn_clicked()
         return;
     }
 
-    m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
-    appendMessage(tr("[Subscribe] %1 (QoS %2)").arg(topic).arg(m_ui->subQosCbx->currentText()), false); // [订阅] %1(QoS %2)
+    if (m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex())))
+    {
+        appendMessage(tr("[Subscribe] %1 (QoS %2)").arg(topic).arg(m_ui->subQosCbx->currentText()), false); // [订阅] %1(QoS %2)
+    }
+    else
+    {
+        appendMessage(tr("[Error] Subscribe request rejected"), false); // [错误] 订阅请求被拒绝
+    }
 }
 
 void MqttClientWgt::on_unsubscribeBtn_clicked()
@@ -156,8 +162,14 @@ void MqttClientWgt::on_unsubscribeBtn_clicked()
         return;
     }
 
-    m_mqttMgr->unsubscribe(topic);
-    appendMessage(tr("[Unsubscribe] %1").arg(topic), false); // [取消订阅] %1
+    if (m_mqttMgr->unsubscribe(topic))
+    {
+        appendMessage(tr("[Unsubscribe] %1").arg(topic), false); // [取消订阅] %1
+    }
+    else
+    {
+        appendMessage(tr("[Error] Unsubscribe request rejected"), false); // [错误] 取消订阅请求被拒绝
+    }
 }
 
 void MqttClientWgt::on_publishBtn_clicked()
@@ -180,8 +192,14 @@ void MqttClientWgt::on_publishBtn_clicked()
         return;
     }
 
-    m_mqttMgr->publish(topic, payload.toUtf8(), static_cast<quint8>(m_ui->pubQosCbx->currentIndex()));
-    appendMessage(tr("[Sent] %1: %2 (QoS %3)").arg(topic).arg(payload).arg(m_ui->pubQosCbx->currentText()), true); // [已发送] %1: %2(QoS %3)
+    if (m_mqttMgr->publish(topic, payload.toUtf8(), static_cast<quint8>(m_ui->pubQosCbx->currentIndex())))
+    {
+        appendMessage(tr("[Sent] %1: %2 (QoS %3)").arg(topic).arg(payload).arg(m_ui->pubQosCbx->currentText()), true); // [已发送] %1: %2(QoS %3)
+    }
+    else
+    {
+        appendMessage(tr("[Error] Publish request rejected"), false); // [错误] 发布请求被拒绝
+    }
 }
 
 void MqttClientWgt::on_clearLogBtn_clicked()
@@ -274,9 +292,15 @@ void MqttClientWgt::slot_onConnected()
     QString topic = selfInboxTopic();
     if (!topic.isEmpty())
     {
-        m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
-        appendMessage(tr("[Subscribe] %1 (QoS %2)").arg(topic)
-                                                       .arg(m_ui->subQosCbx->currentText()), false); // [订阅] %1(QoS %2)
+        if (m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex())))
+        {
+            appendMessage(tr("[Subscribe] %1 (QoS %2)").arg(topic)
+                                                           .arg(m_ui->subQosCbx->currentText()), false); // [订阅] %1(QoS %2)
+        }
+        else
+        {
+            appendMessage(tr("[Error] Subscribe request rejected"), false); // [错误] 订阅请求被拒绝
+        }
     }
 }
 

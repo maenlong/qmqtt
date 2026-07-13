@@ -22,9 +22,12 @@ tests/
 ├── mqtttopicbuilder/
 │   ├── mqtttopicbuilder.pro
 │   └── tst_mqtttopicbuilder.cpp
-└── mqttproxymanager/
-    ├── mqttproxymanager.pro
-    └── tst_mqttproxymanager.cpp
+├── mqttproxymanager/
+│   ├── mqttproxymanager.pro
+│   └── tst_mqttproxymanager.cpp
+└── mqttclientmgr/
+    ├── mqttclientmgr.pro
+    └── tst_mqttclientmgr.cpp
 ```
 
 顶层 `tests.pro` 是 QMake `SUBDIRS` 工程，一次构建所有测试子工程：
@@ -34,7 +37,8 @@ TEMPLATE = subdirs
 CONFIG += ordered
 
 SUBDIRS += mqtttopicbuilder \
-           mqttproxymanager
+           mqttproxymanager \
+           mqttclientmgr
 ```
 
 每个子目录生成一个独立的测试程序：
@@ -42,6 +46,7 @@ SUBDIRS += mqtttopicbuilder \
 ```text
 tst_mqtttopicbuilder.exe
 tst_mqttproxymanager.exe
+tst_mqttclientmgr.exe
 ```
 
 独立测试程序便于单独运行、定位失败模块，也方便后续继续增加测试目录。
@@ -414,9 +419,17 @@ Assert：验证返回值、状态或信号
 - 应用 SOCKS5 代理；
 - 应用代理用户名和密码。
 
+### MqttClientMgr
+
+- 未连接时拒绝订阅、取消订阅和发布；
+- 已连接时拒绝空 Topic；
+- 已连接时拒绝超出 `0～2` 的 QoS；
+- 已连接时接受合法订阅、取消订阅和发布请求；
+- 允许 MQTT 标准支持的空 Payload；
+- 使用本地 `QTcpServer` 模拟 Broker，不依赖公网服务。
+
 后续计划覆盖：
 
-- QoS 参数范围；
 - 重连间隔增长和 60 秒封顶；
 - 主动断开取消重连；
 - 鉴权失败停止重连；

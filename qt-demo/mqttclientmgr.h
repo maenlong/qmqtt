@@ -52,9 +52,9 @@ public:
 
     bool connectToHost(const MqttConnectionParams& params);    // 校验参数并连接 MQTT Broker
     void disconnectFromHost();                                 // 断开连接
-    void subscribe(const QString& topic, quint8 qos);          // 订阅主题
-    void unsubscribe(const QString& topic);                    // 取消订阅
-    void publish(const QString& topic, const QByteArray& payload, quint8 qos); // 发布消息
+    bool subscribe(const QString& topic, quint8 qos);          // 校验并发起订阅请求
+    bool unsubscribe(const QString& topic);                    // 校验并发起取消订阅请求
+    bool publish(const QString& topic, const QByteArray& payload, quint8 qos); // 校验并发起发布请求
     bool isConnected() const;                                  // 当前是否已连接
 
 private:
