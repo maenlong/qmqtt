@@ -7,7 +7,8 @@ class QString;
 class MqttTopicBuilder
 {
 public:
-    static QString inboxTopic(const QString& imAccid); // 构建用户收件箱主题，账号为空时返回空字符串
+    static bool isAccountIdValid(const QString& imAccid); // 校验账号能否作为单个 Topic 层级
+    static QString inboxTopic(const QString& imAccid); // 构建用户收件箱主题，账号无效时返回空字符串
 };
 
 #endif

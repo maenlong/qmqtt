@@ -397,7 +397,10 @@ Assert：验证返回值、状态或信号
 - 纯空白账号返回空 Topic；
 - 普通账号生成 inbox Topic；
 - 自动清理账号两端空格；
-- Unicode 账号生成 inbox Topic。
+- Unicode 账号生成 inbox Topic；
+- 拒绝 Topic 层级分隔符 `/`；
+- 拒绝 MQTT 通配符 `+` 和 `#`；
+- 拒绝嵌入空字符。
 
 ### MqttProxyManager
 
@@ -413,7 +416,6 @@ Assert：验证返回值、状态或信号
 
 后续计划覆盖：
 
-- Topic 非法字符；
 - QoS 参数范围；
 - 重连间隔增长和 60 秒封顶；
 - 主动断开取消重连；

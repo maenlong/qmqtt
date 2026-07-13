@@ -25,6 +25,8 @@ private:
     void appendMessage(const QString& msg, bool isSent);          // 追加日志（>> 发送 / << 接收）
     void updateConnectionState(bool connected);                   // 更新连接状态显示
     void applyTranslations();                                     // 刷新界面翻译文案
+    QString selfInboxTopic();                                     // 校验并构建自己的 inbox Topic
+    QString targetInboxTopic();                                   // 校验并构建目标的 inbox Topic
 
 protected:
     void changeEvent(QEvent* event) override;   // 动态语言切换时刷新界面文案

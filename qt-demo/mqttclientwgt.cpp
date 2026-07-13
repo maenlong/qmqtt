@@ -133,10 +133,9 @@ void MqttClientWgt::on_subscribeBtn_clicked()
         appendMessage(tr("[Error] Not connected"), false); // [错误] 未连接
         return;
     }
-    QString topic = MqttTopicBuilder::inboxTopic(m_ui->selfImAccidLet->text());
+    QString topic = selfInboxTopic();
     if (topic.isEmpty())
     {
-        appendMessage(tr("[Error] Self imAccid is empty"), false); // [错误] 自己的 imAccid 为空
         return;
     }
 
@@ -151,10 +150,9 @@ void MqttClientWgt::on_unsubscribeBtn_clicked()
         appendMessage(tr("[Error] Not connected"), false); // [错误] 未连接
         return;
     }
-    QString topic = MqttTopicBuilder::inboxTopic(m_ui->selfImAccidLet->text());
+    QString topic = selfInboxTopic();
     if (topic.isEmpty())
     {
-        appendMessage(tr("[Error] Self imAccid is empty"), false); // [错误] 自己的 imAccid 为空
         return;
     }
 
@@ -170,10 +168,9 @@ void MqttClientWgt::on_publishBtn_clicked()
         return;
     }
 
-    QString topic = MqttTopicBuilder::inboxTopic(m_ui->targetImAccidLet->text());
+    QString topic = targetInboxTopic();
     if (topic.isEmpty())
     {
-        appendMessage(tr("[Error] Target imAccid is empty"), false); // [错误] 目标 imAccid 为空
         return;
     }
     QString payload = m_ui->payloadTed->toPlainText();
@@ -195,6 +192,44 @@ void MqttClientWgt::on_clearLogBtn_clicked()
 void MqttClientWgt::appendMessage(const QString& msg, bool isSent)
 {
     m_ui->logTed->appendPlainText((isSent ? ">> " : "<< ") + msg);
+}
+
+QString MqttClientWgt::selfInboxTopic()
+{
+    QString topic = QString("");
+    QString imAccid = m_ui->selfImAccidLet->text();
+    if (imAccid.trimmed().isEmpty())
+    {
+        appendMessage(tr("[Error] Self imAccid is empty"), false); // [错误] 自己的 imAccid 为空
+    }
+    else if (!MqttTopicBuilder::isAccountIdValid(imAccid))
+    {
+        appendMessage(tr("[Error] Self imAccid contains invalid MQTT topic characters"), false); // [错误] 自己的 imAccid 包含非法 MQTT Topic 字符
+    }
+    else
+    {
+        topic = MqttTopicBuilder::inboxTopic(imAccid);
+    }
+    return topic;
+}
+
+QString MqttClientWgt::targetInboxTopic()
+{
+    QString topic = QString("");
+    QString imAccid = m_ui->targetImAccidLet->text();
+    if (imAccid.trimmed().isEmpty())
+    {
+        appendMessage(tr("[Error] Target imAccid is empty"), false); // [错误] 目标 imAccid 为空
+    }
+    else if (!MqttTopicBuilder::isAccountIdValid(imAccid))
+    {
+        appendMessage(tr("[Error] Target imAccid contains invalid MQTT topic characters"), false); // [错误] 目标 imAccid 包含非法 MQTT Topic 字符
+    }
+    else
+    {
+        topic = MqttTopicBuilder::inboxTopic(imAccid);
+    }
+    return topic;
 }
 
 void MqttClientWgt::updateConnectionState(bool connected)
@@ -236,7 +271,7 @@ void MqttClientWgt::slot_onConnected()
     m_pingCount = 0;
     appendMessage(tr("[Connected] %1:%2").arg(m_ui->hostLet->text()).arg(m_ui->portLet->text()), false); // [已连接] %1:%2
     updateConnectionState(true);
-    QString topic = MqttTopicBuilder::inboxTopic(m_ui->selfImAccidLet->text());
+    QString topic = selfInboxTopic();
     if (!topic.isEmpty())
     {
         m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
