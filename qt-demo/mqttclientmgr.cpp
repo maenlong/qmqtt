@@ -1,4 +1,4 @@
-#include "mqttclientmgr.h"
+﻿#include "mqttclientmgr.h"
 #include "qmqtt.h"
 #include <QSslError>
 #include <QSslConfiguration>
@@ -82,7 +82,8 @@ void MqttClientMgr::createClient(const MqttConnectionParams& params)
     if (params.type == 2)
     {
         QString url = QString("wss://%1:%2/mqtt").arg(params.host).arg(params.port);
-        m_client = new QMQTT::Client(url, QString(""), QWebSocketProtocol::VersionLatest, false, this);
+        m_client = new QMQTT::Client(url, QString(""), QWebSocketProtocol::VersionLatest,
+                                    params.ignoreSelfSigned, this);
     }
     else if (params.type == 1)
     {
@@ -126,11 +127,6 @@ void MqttClientMgr::applyClientConfig(const MqttConnectionParams& params)
             sslConfig.setCaCertificates(caCerts);
             m_client->setSslConfiguration(sslConfig);
         }
-    }
-
-    if (params.ignoreSelfSigned)
-    {
-        m_client->ignoreSslErrors();
     }
 }
 
