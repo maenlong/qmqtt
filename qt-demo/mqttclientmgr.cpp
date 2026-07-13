@@ -91,7 +91,9 @@ bool MqttClientMgr::isConnectionParamsValid(const MqttConnectionParams& params) 
 {
     bool valid = !params.host.trimmed().isEmpty();
     valid = valid && params.port > 0;
-    valid = valid && params.type >= 0 && params.type <= 2;
+    valid = valid && (params.type == MqttConnectionTcp
+                      || params.type == MqttConnectionWs
+                      || params.type == MqttConnectionWss);
     valid = valid && !params.clientId.trimmed().isEmpty();
     valid = valid && params.keepAlive >= 0 && params.keepAlive <= 65535;
     valid = valid && params.willQos >= 0 && params.willQos <= 2;
@@ -100,13 +102,13 @@ bool MqttClientMgr::isConnectionParamsValid(const MqttConnectionParams& params) 
 
 void MqttClientMgr::createClient(const MqttConnectionParams& params)
 {
-    if (params.type == 2)
+    if (params.type == MqttConnectionWss)
     {
         QString url = QString("wss://%1:%2/mqtt").arg(params.host).arg(params.port);
         m_client = new QMQTT::Client(url, QString(""), QWebSocketProtocol::VersionLatest,
                                     params.ignoreSelfSigned, this);
     }
-    else if (params.type == 1)
+    else if (params.type == MqttConnectionWs)
     {
         QString url = QString("ws://%1:%2/mqtt").arg(params.host).arg(params.port);
         m_client = new QMQTT::Client(url, QString(""), QWebSocketProtocol::VersionLatest, false, this);

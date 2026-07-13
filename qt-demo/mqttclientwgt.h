@@ -40,7 +40,7 @@ private slots:
     void on_browseCaCertBtn_clicked();                // 浏览 CA 证书文件
     void on_applyProxyBtn_clicked();                  // 应用代理设置
 
-    void slot_onTypeChanged(int index);   // 连接类型切换时调整默认端口
+    void on_typeCbx_currentIndexChanged(int index); // 连接类型切换时调整默认端口
     void slot_onConnected();              // MQTT 连接成功
     void slot_onDisconnected();           // MQTT 断开连接
     void slot_onError(int errorCode);     // MQTT 错误

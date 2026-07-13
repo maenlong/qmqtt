@@ -12,12 +12,19 @@ namespace QMQTT {
 class Client;
 }
 
+enum MqttConnectionType
+{
+    MqttConnectionTcp = 0,
+    MqttConnectionWs,
+    MqttConnectionWss
+};
+
 // MQTT 连接参数
 struct MqttConnectionParams
 {
     QString host = QString("");    // Broker 地址
     quint16 port = 1883;           // Broker 端口
-    int     type = 0;              // 连接类型：0=TCP, 1=WS, 2=WSS
+    MqttConnectionType type = MqttConnectionTcp; // 连接类型
     QString clientId = QString(""); // 客户端标识
     QString username = QString(""); // 认证用户名
     QString password = QString(""); // 认证密码

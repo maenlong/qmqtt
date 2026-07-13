@@ -13,23 +13,22 @@
 MqttClientWgt::MqttClientWgt(QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::MqttClientWgt)
-    , m_mqttMgr(new MqttClientMgr(this))
 {
+    m_mqttMgr = new MqttClientMgr(this);
     m_ui->setupUi(this);
     m_ui->hostLet->setText("broker.emqx.io");
     m_ui->portLet->setText("1883");
     m_ui->clientIdLet->setText("qt_demo_" + QUuid::createUuid().toString().left(8));
     m_ui->keepAliveLet->setText("30");
-    m_ui->typeCbx->addItems({"TCP", "WS", "WSS"});
+    m_ui->typeCbx->addItem(QString("TCP"), static_cast<int>(MqttConnectionTcp));
+    m_ui->typeCbx->addItem(QString("WS"), static_cast<int>(MqttConnectionWs));
+    m_ui->typeCbx->addItem(QString("WSS"), static_cast<int>(MqttConnectionWss));
     m_ui->willQosCbx->addItems({"0", "1", "2"});
     m_ui->subQosCbx->addItems({"0", "1", "2"});
     m_ui->subQosCbx->setCurrentIndex(1);
     m_ui->pubQosCbx->addItems({"0", "1", "2"});
     m_ui->pubQosCbx->setCurrentIndex(1);
     m_ui->proxyTypeCbx->addItems({"None", "HTTP", "SOCKS5"});
-
-    connect(m_ui->typeCbx, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, &MqttClientWgt::slot_onTypeChanged);
 
     connect(m_mqttMgr, &MqttClientMgr::sig_connected,
             this, &MqttClientWgt::slot_onConnected);
@@ -83,7 +82,7 @@ void MqttClientWgt::on_connectBtn_clicked()
     {
         params.keepAlive = -1;
     }
-    params.type = m_ui->typeCbx->currentIndex();
+    params.type = static_cast<MqttConnectionType>(m_ui->typeCbx->currentData().toInt());
     params.cleanSession = m_ui->cleanSessionCbk->isChecked();
     params.sslCaCertPath = m_ui->sslCaCertLet->text();
     params.ignoreSelfSigned = m_ui->ignoreSelfSignedCbk->isChecked();
@@ -186,21 +185,20 @@ void MqttClientWgt::updateConnectionState(bool connected)
     m_ui->statusTextLbl->setStyleSheet(connected ? "color: green;" : "color: red;");
 }
 
-void MqttClientWgt::slot_onTypeChanged(int index)
+void MqttClientWgt::on_typeCbx_currentIndexChanged(int index)
 {
-    Q_UNUSED(index)
-    QString type = m_ui->typeCbx->currentText();
-    if (type == "WSS")
+    MqttConnectionType type = static_cast<MqttConnectionType>(m_ui->typeCbx->itemData(index).toInt());
+    if (type == MqttConnectionWss)
     {
-        m_ui->portLet->setText("8084");
+        m_ui->portLet->setText(QString("8084"));
     }
-    else if (type == "WS")
+    else if (type == MqttConnectionWs)
     {
-        m_ui->portLet->setText("8083");
+        m_ui->portLet->setText(QString("8083"));
     }
     else
     {
-        m_ui->portLet->setText("1883");
+        m_ui->portLet->setText(QString("1883"));
     }
 }
 
