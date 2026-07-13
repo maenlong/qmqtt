@@ -303,7 +303,7 @@
            </widget>
           </item>
           <item>
-           <spacer name="horizontalSpacer_1">
+           <spacer name="connBtnsSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -371,7 +371,7 @@
        </widget>
       </item>
       <item row="2" column="3" colspan="3">
-       <spacer name="horizontalSpacer_2">
+       <spacer name="willOptionsSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -391,13 +391,13 @@
      <property name="title">
       <string>Subscribe</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="subscribeLayout">
       <property name="spacing">
        <number>10</number>
       </property>
       <item>
-       <widget class="QWidget" name="subcribeWgt" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout">
+       <widget class="QWidget" name="subscribeOptionsWgt" native="true">
+        <layout class="QHBoxLayout" name="subscribeOptionsLayout">
          <property name="spacing">
           <number>10</number>
          </property>
@@ -567,7 +567,7 @@
           </widget>
          </item>
          <item>
-          <spacer name="horizontalSpacer_3">
+          <spacer name="logBtnsSpacer">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
