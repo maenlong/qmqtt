@@ -30,6 +30,8 @@ struct MqttConnectionParams
     QString password = QString(""); // 认证密码
     int     keepAlive = 30;        // 心跳间隔（秒）
     bool    cleanSession = true;   // 是否清理会话
+    QString websocketPath = QString("/mqtt"); // WebSocket 路径
+    QString websocketOrigin = QString(""); // WebSocket Origin
     QString sslCaCertPath = QString(""); // CA 证书文件路径
     bool    ignoreSelfSigned = false; // 是否忽略自签名证书错误
     QString willTopic = QString(""); // 遗嘱主题
@@ -56,6 +58,7 @@ public:
 
 private:
     bool isConnectionParamsValid(const MqttConnectionParams& params) const; // 校验连接参数
+    QString webSocketUrl(const MqttConnectionParams& params) const; // 构建 WebSocket URL
     void createClient(const MqttConnectionParams& params);      // 创建 qmqtt 客户端实例
     void applyClientConfig(const MqttConnectionParams& params); // 应用连接参数
     void forwardClientSignals();                                // 透传 qmqtt 信号

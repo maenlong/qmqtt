@@ -231,7 +231,31 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0" colspan="6">
+       <item row="3" column="0">
+        <widget class="QLabel" name="websocketPathTipLbl">
+         <property name="text">
+          <string>WS Path:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" colspan="2">
+        <widget class="QLineEdit" name="websocketPathLet">
+         <property name="text">
+          <string notr="true">/mqtt</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QLabel" name="websocketOriginTipLbl">
+         <property name="text">
+          <string>Origin:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="4" colspan="2">
+        <widget class="QLineEdit" name="websocketOriginLet"/>
+       </item>
+       <item row="4" column="0" colspan="6">
         <widget class="QWidget" name="connBtnsWgt" native="true">
          <layout class="QHBoxLayout" name="connBtnsLayout">
           <property name="spacing">
@@ -582,6 +606,8 @@
    <tabstop>hostLet</tabstop>
   <tabstop>portLet</tabstop>
   <tabstop>typeCbx</tabstop>
+  <tabstop>websocketPathLet</tabstop>
+  <tabstop>websocketOriginLet</tabstop>
   <tabstop>clientIdLet</tabstop>
   <tabstop>usernameLet</tabstop>
   <tabstop>passwordLet</tabstop>

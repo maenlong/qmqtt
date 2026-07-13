@@ -51,6 +51,7 @@ qt-demo/
 - [x] TCP 直连（已验证 broker.emqx.io:1883 连接/订阅/发布/接收正常）
 - [x] WS（WebSocket）连接
 - [x] WSS（WebSocket + TLS）连接
+- [x] WebSocket Path / Origin 可配置，使用 QUrl 构建连接地址
 - [x] 用户名/密码认证
 - [x] Keep Alive 30s
 - [x] Clean Session true/false

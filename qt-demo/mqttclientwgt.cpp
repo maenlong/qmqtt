@@ -93,6 +93,8 @@ void MqttClientWgt::on_connectBtn_clicked()
     }
     params.type = static_cast<MqttConnectionType>(m_ui->typeCbx->currentData().toInt());
     params.cleanSession = m_ui->cleanSessionCbk->isChecked();
+    params.websocketPath = m_ui->websocketPathLet->text();
+    params.websocketOrigin = m_ui->websocketOriginLet->text();
     params.sslCaCertPath = m_ui->sslCaCertLet->text();
     params.ignoreSelfSigned = m_ui->ignoreSelfSignedCbk->isChecked();
     params.willTopic = m_ui->willTopicLet->text();
@@ -200,6 +202,11 @@ void MqttClientWgt::updateConnectionState(bool connected)
 void MqttClientWgt::on_typeCbx_currentIndexChanged(int index)
 {
     MqttConnectionType type = static_cast<MqttConnectionType>(m_ui->typeCbx->itemData(index).toInt());
+    bool webSocketEnabled = type == MqttConnectionWs || type == MqttConnectionWss;
+    m_ui->websocketPathTipLbl->setEnabled(webSocketEnabled);
+    m_ui->websocketPathLet->setEnabled(webSocketEnabled);
+    m_ui->websocketOriginTipLbl->setEnabled(webSocketEnabled);
+    m_ui->websocketOriginLet->setEnabled(webSocketEnabled);
     if (type == MqttConnectionWss)
     {
         m_ui->portLet->setText(QString("8084"));
@@ -352,6 +359,8 @@ void MqttClientWgt::applyTranslations()
     m_ui->passwordLet->setToolTip(tr("Optional: broker authentication password")); // 可选：代理认证密码
     m_ui->keepAliveLet->setToolTip(tr("Heartbeat interval (seconds).\nIf broker receives no packet within 1.5x this interval, client is considered disconnected.")); // 心跳间隔（秒）。超过 1.5 倍未收到数据包则视为断开。
     m_ui->cleanSessionCbk->setToolTip(tr("ON: start a fresh session, discard old subscriptions & offline messages.\nOFF: broker preserves subscriptions & offline messages across reconnects.")); // ON：全新会话，丢弃旧订阅和离线消息。\nOFF：代理保留订阅和离线消息。
+    m_ui->websocketPathLet->setToolTip(tr("WebSocket request path, e.g. /mqtt")); // WebSocket 请求路径，例如 /mqtt
+    m_ui->websocketOriginLet->setToolTip(tr("Optional WebSocket Origin header")); // 可选的 WebSocket Origin 请求头
     m_ui->willTopicLet->setToolTip(tr("Last Will topic.\nBroker publishes this message when client disconnects unexpectedly.")); // 遗嘱主题，客户端异常断开时代理发布此消息。
     m_ui->willMessageLet->setToolTip(tr("Last Will payload (sent when client goes offline unexpectedly)")); // 遗嘱消息内容（客户端异常离线时发送）
     m_ui->willQosCbx->setToolTip(tr("0: at most once\n1: at least once (default)\n2: exactly once")); // 0：最多一次\n1：至少一次（默认）\n2：恰好一次

@@ -3,6 +3,7 @@
 #include <QSslError>
 #include <QSslConfiguration>
 #include <QSslCertificate>
+#include <QUrl>
 #include <QtWebSockets/QWebSocketProtocol>
 
 MqttClientMgr::MqttClientMgr(QObject* parent)
@@ -97,21 +98,51 @@ bool MqttClientMgr::isConnectionParamsValid(const MqttConnectionParams& params) 
     valid = valid && !params.clientId.trimmed().isEmpty();
     valid = valid && params.keepAlive >= 0 && params.keepAlive <= 65535;
     valid = valid && params.willQos >= 0 && params.willQos <= 2;
+    if (valid && (params.type == MqttConnectionWs || params.type == MqttConnectionWss))
+    {
+        valid = !webSocketUrl(params).isEmpty();
+    }
     return valid;
+}
+
+QString MqttClientMgr::webSocketUrl(const MqttConnectionParams& params) const
+{
+    QString result = QString("");
+    QString host = params.host.trimmed();
+    if (host.startsWith(QString("[")) && host.endsWith(QString("]")))
+    {
+        host = host.mid(1, host.length() - 2);
+    }
+
+    QString path = params.websocketPath.trimmed();
+    if (path.isEmpty())
+    {
+        path = QString("/");
+    }
+    else if (!path.startsWith(QString("/")))
+    {
+        path.prepend(QString("/"));
+    }
+
+    QUrl url;
+    url.setScheme(params.type == MqttConnectionWss ? QString("wss") : QString("ws"));
+    url.setHost(host);
+    url.setPort(params.port);
+    url.setPath(path);
+    if (url.isValid() && !url.host().isEmpty())
+    {
+        result = url.toString();
+    }
+    return result;
 }
 
 void MqttClientMgr::createClient(const MqttConnectionParams& params)
 {
-    if (params.type == MqttConnectionWss)
+    if (params.type == MqttConnectionWs || params.type == MqttConnectionWss)
     {
-        QString url = QString("wss://%1:%2/mqtt").arg(params.host).arg(params.port);
-        m_client = new QMQTT::Client(url, QString(""), QWebSocketProtocol::VersionLatest,
-                                    params.ignoreSelfSigned, this);
-    }
-    else if (params.type == MqttConnectionWs)
-    {
-        QString url = QString("ws://%1:%2/mqtt").arg(params.host).arg(params.port);
-        m_client = new QMQTT::Client(url, QString(""), QWebSocketProtocol::VersionLatest, false, this);
+        bool ignoreSelfSigned = params.type == MqttConnectionWss && params.ignoreSelfSigned;
+        m_client = new QMQTT::Client(webSocketUrl(params), params.websocketOrigin.trimmed(),
+                                    QWebSocketProtocol::VersionLatest, ignoreSelfSigned, this);
     }
     else
     {
