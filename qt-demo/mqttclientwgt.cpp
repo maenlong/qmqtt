@@ -8,6 +8,7 @@
 #include <QUuid>
 #include <QSslError>
 #include <QFileDialog>
+#include <QIntValidator>
 #include <QStyle>
 #include <QTime>
 
@@ -17,6 +18,12 @@ MqttClientWgt::MqttClientWgt(QWidget* parent)
 {
     m_mqttMgr = new MqttClientMgr(this);
     m_ui->setupUi(this);
+
+    QIntValidator* portValidator = new QIntValidator(1, 65535, this);
+    m_ui->portLet->setValidator(portValidator);
+    m_ui->proxyPortLet->setValidator(portValidator);
+    m_ui->keepAliveLet->setValidator(new QIntValidator(0, 65535, this));
+
     m_ui->hostLet->setText("broker.emqx.io");
     m_ui->portLet->setText("1883");
     QString uuidFragment = QUuid::createUuid().toString(QUuid::WithoutBraces).left(8);
