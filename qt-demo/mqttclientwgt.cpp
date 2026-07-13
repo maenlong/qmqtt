@@ -1,11 +1,12 @@
 ﻿#include "mqttclientwgt.h"
 #include "mqttclientmgr.h"
+#include "mqttproxymanager.h"
+#include "mqtttopicbuilder.h"
 #include "ui_mqttclientwgt.h"
 #include <QApplication>
 #include <QTranslator>
 #include <QUuid>
 #include <QSslError>
-#include <QNetworkProxy>
 #include <QFileDialog>
 #include <QTime>
 
@@ -27,8 +28,6 @@ MqttClientWgt::MqttClientWgt(QWidget* parent)
     m_ui->pubQosCbx->setCurrentIndex(1);
     m_ui->proxyTypeCbx->addItems({"None", "HTTP", "SOCKS5"});
 
-    connect(m_ui->applyProxyBtn, &QPushButton::clicked,
-            this, &MqttClientWgt::slot_onApplyProxy);
     connect(m_ui->typeCbx, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &MqttClientWgt::slot_onTypeChanged);
 
@@ -106,14 +105,13 @@ void MqttClientWgt::on_subscribeBtn_clicked()
         appendMessage(tr("[Error] Not connected"), false); // [错误] 未连接
         return;
     }
-    QString imAccid = m_ui->selfImAccidLet->text();
-    if (imAccid.isEmpty())
+    QString topic = MqttTopicBuilder::inboxTopic(m_ui->selfImAccidLet->text());
+    if (topic.isEmpty())
     {
         appendMessage(tr("[Error] Self imAccid is empty"), false); // [错误] 自己的 imAccid 为空
         return;
     }
 
-    QString topic = QString("user/%1/inbox").arg(imAccid);
     m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
     appendMessage(tr("[Subscribe] %1 (QoS %2)").arg(topic).arg(m_ui->subQosCbx->currentText()), false); // [订阅] %1(QoS %2)
 }
@@ -125,14 +123,13 @@ void MqttClientWgt::on_unsubscribeBtn_clicked()
         appendMessage(tr("[Error] Not connected"), false); // [错误] 未连接
         return;
     }
-    QString imAccid = m_ui->selfImAccidLet->text();
-    if (imAccid.isEmpty())
+    QString topic = MqttTopicBuilder::inboxTopic(m_ui->selfImAccidLet->text());
+    if (topic.isEmpty())
     {
         appendMessage(tr("[Error] Self imAccid is empty"), false); // [错误] 自己的 imAccid 为空
         return;
     }
 
-    QString topic = QString("user/%1/inbox").arg(imAccid);
     m_mqttMgr->unsubscribe(topic);
     appendMessage(tr("[Unsubscribe] %1").arg(topic), false); // [取消订阅] %1
 }
@@ -145,8 +142,8 @@ void MqttClientWgt::on_publishBtn_clicked()
         return;
     }
 
-    QString target = m_ui->targetImAccidLet->text();
-    if (target.isEmpty())
+    QString topic = MqttTopicBuilder::inboxTopic(m_ui->targetImAccidLet->text());
+    if (topic.isEmpty())
     {
         appendMessage(tr("[Error] Target imAccid is empty"), false); // [错误] 目标 imAccid 为空
         return;
@@ -158,7 +155,6 @@ void MqttClientWgt::on_publishBtn_clicked()
         return;
     }
 
-    QString topic = QString("user/%1/inbox").arg(target);
     m_mqttMgr->publish(topic, payload.toUtf8(), static_cast<quint8>(m_ui->pubQosCbx->currentIndex()));
     appendMessage(tr("[Sent] %1: %2 (QoS %3)").arg(topic).arg(payload).arg(m_ui->pubQosCbx->currentText()), true); // [已发送] %1: %2(QoS %3)
 }
@@ -204,9 +200,9 @@ void MqttClientWgt::slot_onConnected()
     m_pingCount = 0;
     appendMessage(tr("[Connected] %1:%2").arg(m_ui->hostLet->text()).arg(m_ui->portLet->text()), false); // [已连接] %1:%2
     updateConnectionState(true);
-    if (!m_ui->selfImAccidLet->text().isEmpty())
+    QString topic = MqttTopicBuilder::inboxTopic(m_ui->selfImAccidLet->text());
+    if (!topic.isEmpty())
     {
-        QString topic = QString("user/%1/inbox").arg(m_ui->selfImAccidLet->text());
         m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
         appendMessage(tr("[Subscribed] %1").arg(topic), false); // [已订阅] %1
     }
@@ -236,37 +232,28 @@ void MqttClientWgt::slot_onMessageReceived(const QString& topic, const QByteArra
     appendMessage(tr("[Received] %1: %2").arg(topic).arg(QString::fromUtf8(payload)), false); // [收到] %1: %2
 }
 
-void MqttClientWgt::slot_onApplyProxy()
+void MqttClientWgt::on_applyProxyBtn_clicked()
 {
-    int typeIdx = m_ui->proxyTypeCbx->currentIndex();
-    if (typeIdx == 0)
+    MqttProxyParams params;
+    params.type = static_cast<MqttProxyType>(m_ui->proxyTypeCbx->currentIndex());
+    params.host = m_ui->proxyHostLet->text();
+    params.port = m_ui->proxyPortLet->text().toUShort();
+    params.username = m_ui->proxyUsernameLet->text();
+    params.password = m_ui->proxyPasswordLet->text();
+
+    if (!MqttProxyManager::applyProxy(params))
     {
-        QNetworkProxy::setApplicationProxy(QNetworkProxy::NoProxy);
+        appendMessage(tr("[Proxy] Invalid parameters"), false); // [代理] 参数无效
+    }
+    else if (params.type == MqttProxyNone)
+    {
         appendMessage(tr("[Proxy] Disabled"), false); // [代理] 已禁用
-        return;
     }
-
-    QString host = m_ui->proxyHostLet->text().trimmed();
-    if (host.isEmpty())
+    else
     {
-        appendMessage(tr("[Proxy] Host is empty"), false); // [代理] 主机地址为空
-        return;
+        appendMessage(tr("[Proxy] %1 %2:%3").arg(m_ui->proxyTypeCbx->currentText())
+                                                .arg(params.host.trimmed()).arg(params.port), false); // [代理] %1 %2:%3
     }
-
-    QNetworkProxy proxy;
-    proxy.setType(typeIdx == 1 ? QNetworkProxy::HttpProxy : QNetworkProxy::Socks5Proxy);
-    proxy.setHostName(host);
-    proxy.setPort(static_cast<quint16>(m_ui->proxyPortLet->text().toUShort()));
-
-    QString username = m_ui->proxyUsernameLet->text().trimmed();
-    if (!username.isEmpty())
-    {
-        proxy.setUser(username);
-        proxy.setPassword(m_ui->proxyPasswordLet->text());
-    }
-
-    QNetworkProxy::setApplicationProxy(proxy);
-    appendMessage(tr("[Proxy] %1 %2:%3").arg(m_ui->proxyTypeCbx->currentText()).arg(host).arg(proxy.port()), false); // [代理] %1 %2:%3
 }
 
 void MqttClientWgt::slot_onPingResp()

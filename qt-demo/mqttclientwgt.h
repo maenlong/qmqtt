@@ -38,6 +38,7 @@ private slots:
     void on_clearLogBtn_clicked();      // 清空日志
     void on_langCbx_currentIndexChanged(int index);   // 语言切换
     void on_browseCaCertBtn_clicked();                // 浏览 CA 证书文件
+    void on_applyProxyBtn_clicked();                  // 应用代理设置
 
     void slot_onTypeChanged(int index);   // 连接类型切换时调整默认端口
     void slot_onConnected();              // MQTT 连接成功
@@ -46,7 +47,6 @@ private slots:
     void slot_onSslErrors(const QList<QSslError>& errors);  // SSL 错误
     void slot_onMessageReceived(const QString& topic, const QByteArray& payload);  // 收到消息
     void slot_onPingResp();                               // Ping 响应确认
-    void slot_onApplyProxy();                 // 应用代理设置
 
 private:
     Ui::MqttClientWgt* m_ui = nullptr;        // UI 实例

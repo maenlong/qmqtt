@@ -18,9 +18,11 @@ qt-demo/
 ├── doc/
 │   └── plan.md
 ├── main.cpp                    # 程序入口
-├── mqttclientwgt.h / .cpp      # UI 层，依赖 MqttClientMgr
+├── mqttclientwgt.h / .cpp      # UI 层，收集输入并展示状态
 ├── mqttclientwgt.ui             # UI 布局
 ├── mqttclientmgr.h / .cpp      # MQTT 业务层，纯 QObject，与 UI 无关
+├── mqtttopicbuilder.h / .cpp   # Topic 业务规则，可供 GUI/CLI 复用
+├── mqttproxymanager.h / .cpp   # 全局代理配置，可供 GUI/CLI 复用
 ├── mqtt-client.pro             # Qt 工程文件
 ├── mqtt-client.qrc             # 资源文件（i18n .qm）
 ├── mqtt-client_zh_CN.ts / .qm  # 中文翻译文件
@@ -31,14 +33,17 @@ qt-demo/
 
 ```
 用户输入 → MqttClientWgt (UI)
-                ↓  收集参数
-           MqttClientMgr (业务层)
-                ↓
-           QMQTT::Client (SDK)
+                ├── MqttTopicBuilder (Topic 规则)
+                ├── MqttProxyManager (代理配置)
+                └── MqttClientMgr (MQTT 业务层)
+                           ↓
+                      QMQTT::Client (SDK)
 ```
 
 - `MqttClientMgr`：纯 QObject，封装连接/订阅/发布/断开，通过 signals 通知结果，不包含任何 UI 代码。
-- `MqttClientWgt`：Qt Widgets 界面，只做两件事：① 从 UI 控件收集参数传给 `MqttClientMgr`；② 将 `MqttClientMgr` 的信号显示到日志/状态栏。
+- `MqttTopicBuilder`：集中封装 `user/{imAccid}/inbox` Topic 规则，避免 GUI/CLI 重复拼接字符串。
+- `MqttProxyManager`：校验并应用 None/HTTP/SOCKS5 全局代理配置，不依赖 UI。
+- `MqttClientWgt`：Qt Widgets 界面，只负责收集参数、调用可复用模块并展示日志/状态。
 
 ### 功能状态
 
