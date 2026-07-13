@@ -69,7 +69,12 @@ void MqttClientWgt::on_connectBtn_clicked()
     params.clientId = m_ui->clientIdLet->text();
     params.username = m_ui->usernameLet->text();
     params.password = m_ui->passwordLet->text();
-    params.keepAlive = m_ui->keepAliveLet->text().toInt();
+    bool keepAliveOk = false;
+    params.keepAlive = m_ui->keepAliveLet->text().toInt(&keepAliveOk);
+    if (!keepAliveOk)
+    {
+        params.keepAlive = -1;
+    }
     params.type = m_ui->typeCbx->currentIndex();
     params.cleanSession = m_ui->cleanSessionCbk->isChecked();
     params.sslCaCertPath = m_ui->sslCaCertLet->text();
@@ -79,8 +84,14 @@ void MqttClientWgt::on_connectBtn_clicked()
     params.willQos = m_ui->willQosCbx->currentIndex();
     params.willRetain = m_ui->willRetainCbk->isChecked();
 
-    m_mqttMgr->connectToHost(params);
-    appendMessage(tr("[Connecting] ..."), false); // [正在连接] ...
+    if (m_mqttMgr->connectToHost(params))
+    {
+        appendMessage(tr("[Connecting] ..."), false); // [正在连接] ...
+    }
+    else
+    {
+        appendMessage(tr("[Error] Invalid connection parameters"), false); // [错误] 连接参数无效
+    }
 }
 
 void MqttClientWgt::on_disconnectBtn_clicked()

@@ -21,21 +21,31 @@ MqttClientMgr::~MqttClientMgr()
     }
 }
 
-void MqttClientMgr::connectToHost(const MqttConnectionParams& params)
+bool MqttClientMgr::connectToHost(const MqttConnectionParams& params)
 {
-    if (m_client)
+    bool success = false;
+    if (isConnectionParamsValid(params))
     {
-        m_client->disconnect();
-        m_client->disconnectFromHost();
-        m_client->deleteLater();
-        m_client = nullptr;
+        if (m_client)
+        {
+            m_client->disconnect();
+            m_client->disconnectFromHost();
+            m_client->deleteLater();
+            m_client = nullptr;
+        }
+
+        MqttConnectionParams normalizedParams = params;
+        normalizedParams.host = params.host.trimmed();
+        normalizedParams.clientId = params.clientId.trimmed();
+
+        createClient(normalizedParams);
+        applyClientConfig(normalizedParams);
+        forwardClientSignals();
+
+        m_client->connectToHost();
+        success = true;
     }
-
-    createClient(params);
-    applyClientConfig(params);
-    forwardClientSignals();
-
-    m_client->connectToHost();
+    return success;
 }
 
 void MqttClientMgr::disconnectFromHost()
@@ -75,6 +85,17 @@ void MqttClientMgr::publish(const QString& topic, const QByteArray& payload, qui
 bool MqttClientMgr::isConnected() const
 {
     return m_client && m_client->isConnectedToHost();
+}
+
+bool MqttClientMgr::isConnectionParamsValid(const MqttConnectionParams& params) const
+{
+    bool valid = !params.host.trimmed().isEmpty();
+    valid = valid && params.port > 0;
+    valid = valid && params.type >= 0 && params.type <= 2;
+    valid = valid && !params.clientId.trimmed().isEmpty();
+    valid = valid && params.keepAlive >= 0 && params.keepAlive <= 65535;
+    valid = valid && params.willQos >= 0 && params.willQos <= 2;
+    return valid;
 }
 
 void MqttClientMgr::createClient(const MqttConnectionParams& params)
