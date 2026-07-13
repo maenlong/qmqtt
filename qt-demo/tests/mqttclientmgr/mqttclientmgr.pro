@@ -10,6 +10,8 @@ INCLUDEPATH += $$PWD/../..
 include($$PWD/../../../qmqtt.pri)
 
 SOURCES += tst_mqttclientmgr.cpp \
-           $$PWD/../../mqttclientmgr.cpp
+           $$PWD/../../mqttclientmgr.cpp \
+           $$PWD/../../mqttreconnectpolicy.cpp
 
-HEADERS += $$PWD/../../mqttclientmgr.h
+HEADERS += $$PWD/../../mqttclientmgr.h \
+           $$PWD/../../mqttreconnectpolicy.h

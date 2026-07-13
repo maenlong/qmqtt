@@ -3,4 +3,5 @@ CONFIG += ordered
 
 SUBDIRS += mqtttopicbuilder \
            mqttproxymanager \
+           mqttreconnectpolicy \
            mqttclientmgr

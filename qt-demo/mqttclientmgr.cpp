@@ -7,11 +7,6 @@
 #include <QUrl>
 #include <QtWebSockets/QWebSocketProtocol>
 
-namespace {
-const int InitialReconnectIntervalMs = 5000;
-const int MaximumReconnectIntervalMs = 60000;
-}
-
 MqttClientMgr::MqttClientMgr(QObject* parent)
     : QObject(parent)
 {
@@ -238,7 +233,7 @@ void MqttClientMgr::forwardClientSignals()
             this, [this]()
     {
         m_reconnectTimer->stop();
-        m_reconnectIntervalMs = InitialReconnectIntervalMs;
+        m_reconnectPolicy.reset();
         emit sig_connected();
     });
 
@@ -294,7 +289,7 @@ void MqttClientMgr::forwardClientSignals()
 void MqttClientMgr::resetReconnectState()
 {
     m_reconnectTimer->stop();
-    m_reconnectIntervalMs = InitialReconnectIntervalMs;
+    m_reconnectPolicy.reset();
     m_manualDisconnect = false;
     m_reconnectAllowed = true;
 }
@@ -307,18 +302,10 @@ void MqttClientMgr::scheduleReconnect()
         return;
     }
 
-    int delayMs = m_reconnectIntervalMs;
+    int delayMs = m_reconnectPolicy.currentDelayMs();
     m_reconnectTimer->start(delayMs);
     emit sig_reconnectScheduled(delayMs / 1000);
-
-    if (m_reconnectIntervalMs < MaximumReconnectIntervalMs)
-    {
-        m_reconnectIntervalMs *= 2;
-        if (m_reconnectIntervalMs > MaximumReconnectIntervalMs)
-        {
-            m_reconnectIntervalMs = MaximumReconnectIntervalMs;
-        }
-    }
+    m_reconnectPolicy.advance();
 }
 
 void MqttClientMgr::slot_reconnect()

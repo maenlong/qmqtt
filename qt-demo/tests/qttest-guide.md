@@ -25,6 +25,9 @@ tests/
 ├── mqttproxymanager/
 │   ├── mqttproxymanager.pro
 │   └── tst_mqttproxymanager.cpp
+├── mqttreconnectpolicy/
+│   ├── mqttreconnectpolicy.pro
+│   └── tst_mqttreconnectpolicy.cpp
 └── mqttclientmgr/
     ├── mqttclientmgr.pro
     └── tst_mqttclientmgr.cpp
@@ -38,6 +41,7 @@ CONFIG += ordered
 
 SUBDIRS += mqtttopicbuilder \
            mqttproxymanager \
+           mqttreconnectpolicy \
            mqttclientmgr
 ```
 
@@ -46,6 +50,7 @@ SUBDIRS += mqtttopicbuilder \
 ```text
 tst_mqtttopicbuilder.exe
 tst_mqttproxymanager.exe
+tst_mqttreconnectpolicy.exe
 tst_mqttclientmgr.exe
 ```
 
@@ -419,6 +424,13 @@ Assert：验证返回值、状态或信号
 - 应用 SOCKS5 代理；
 - 应用代理用户名和密码。
 
+### MqttReconnectPolicy
+
+- 初始重连等待时间为 5 秒；
+- 等待时间按 `5 → 10 → 20 → 40 → 60` 秒指数增长；
+- 达到 60 秒后保持封顶值；
+- 连接成功后可重置为 5 秒。
+
 ### MqttClientMgr
 
 - 未连接时拒绝订阅、取消订阅和发布；
@@ -426,13 +438,13 @@ Assert：验证返回值、状态或信号
 - 已连接时拒绝超出 `0～2` 的 QoS；
 - 已连接时接受合法订阅、取消订阅和发布请求；
 - 允许 MQTT 标准支持的空 Payload；
+- 临时断线后安排自动重连；
+- 主动断开后不安排自动重连；
+- 鉴权失败后停止自动重连；
 - 使用本地 `QTcpServer` 模拟 Broker，不依赖公网服务。
 
 后续计划覆盖：
 
-- 重连间隔增长和 60 秒封顶；
-- 主动断开取消重连；
-- 鉴权失败停止重连；
 - Broker 恢复后的重新订阅。
 
 ## 16. 常见问题

@@ -1,5 +1,7 @@
 ﻿#include "../../mqttclientmgr.h"
 
+#include "qmqtt.h"
+
 #include <QHostAddress>
 #include <QSignalSpy>
 #include <QTcpServer>
@@ -22,12 +24,16 @@ private slots:
     void cleanup();                                    // 清理本地测试 Broker
     void slot_rejectsOperationsWhenDisconnected();    // 未连接时拒绝操作
     void slot_rejectsInvalidOperationsWhenConnected(); // 已连接时拒绝非法参数
-    void slot_acceptsValidOperationsWhenConnected();  // 已连接时接受合法请求
+    void slot_acceptsValidOperationsWhenConnected();   // 已连接时接受合法请求
+    void slot_schedulesReconnectAfterTemporaryDisconnect(); // 临时断线后安排重连
+    void slot_manualDisconnectDoesNotReconnect();      // 主动断开后不再重连
+    void slot_authFailureStopsReconnect();             // 鉴权失败后停止重连
 
 private:
     QTcpServer* m_server = nullptr;                    // 本地测试 Broker
     QTcpSocket* m_clientSocket = nullptr;              // qmqtt 客户端连接
     QByteArray m_receivedData = QByteArray("");        // 已接收的 MQTT 数据
+    quint8 m_connackReturnCode = 0;                    // CONNACK 返回码
     bool m_connackSent = false;                        // 是否已经返回 CONNACK
 };
 
@@ -84,7 +90,9 @@ void MqttClientMgrTest::slot_readClientData()
     if (!m_connackSent && packetLength > 0
             && (static_cast<quint8>(m_receivedData.at(0)) & 0xF0) == 0x10)
     {
-        m_clientSocket->write(QByteArray::fromHex("20020000"));
+        QByteArray connack = QByteArray::fromHex("20020000");
+        connack[3] = static_cast<char>(m_connackReturnCode);
+        m_clientSocket->write(connack);
         m_clientSocket->flush();
         m_connackSent = true;
     }
@@ -94,6 +102,7 @@ void MqttClientMgrTest::init()
 {
     m_clientSocket = nullptr;
     m_receivedData.clear();
+    m_connackReturnCode = 0;
     m_connackSent = false;
     m_server = new QTcpServer(this);
     connect(m_server, &QTcpServer::newConnection,
@@ -147,6 +156,66 @@ void MqttClientMgrTest::slot_acceptsValidOperationsWhenConnected()
     QVERIFY(mqttClientMgr.publish(QString("user/alice/inbox"), QByteArray(""), 0));
     QVERIFY(mqttClientMgr.publish(QString("user/alice/inbox"), QByteArray("message"), 1));
     QVERIFY(mqttClientMgr.publish(QString("user/alice/inbox"), QByteArray("message"), 2));
+}
+
+void MqttClientMgrTest::slot_schedulesReconnectAfterTemporaryDisconnect()
+{
+    MqttClientMgr mqttClientMgr;
+    QSignalSpy connectedSpy(&mqttClientMgr, &MqttClientMgr::sig_connected);
+    QSignalSpy reconnectScheduledSpy(&mqttClientMgr,
+                                     &MqttClientMgr::sig_reconnectScheduled);
+    QVERIFY(connectedSpy.isValid());
+    QVERIFY(reconnectScheduledSpy.isValid());
+    QVERIFY(mqttClientMgr.connectToHost(connectionParams()));
+    QTRY_COMPARE(connectedSpy.count(), 1);
+    QVERIFY(m_clientSocket);
+
+    m_clientSocket->abort();
+
+    QTRY_COMPARE(reconnectScheduledSpy.count(), 1);
+    QCOMPARE(reconnectScheduledSpy.at(0).at(0).toInt(), 5);
+}
+
+void MqttClientMgrTest::slot_manualDisconnectDoesNotReconnect()
+{
+    MqttClientMgr mqttClientMgr;
+    QSignalSpy connectedSpy(&mqttClientMgr, &MqttClientMgr::sig_connected);
+    QSignalSpy disconnectedSpy(&mqttClientMgr, &MqttClientMgr::sig_disconnected);
+    QSignalSpy reconnectScheduledSpy(&mqttClientMgr,
+                                     &MqttClientMgr::sig_reconnectScheduled);
+    QVERIFY(connectedSpy.isValid());
+    QVERIFY(disconnectedSpy.isValid());
+    QVERIFY(reconnectScheduledSpy.isValid());
+    QVERIFY(mqttClientMgr.connectToHost(connectionParams()));
+    QTRY_COMPARE(connectedSpy.count(), 1);
+
+    mqttClientMgr.disconnectFromHost();
+
+    QTRY_COMPARE(disconnectedSpy.count(), 1);
+    QCOMPARE(reconnectScheduledSpy.count(), 0);
+}
+
+void MqttClientMgrTest::slot_authFailureStopsReconnect()
+{
+    m_connackReturnCode = 5;
+    MqttClientMgr mqttClientMgr;
+    QSignalSpy errorSpy(&mqttClientMgr, &MqttClientMgr::sig_error);
+    QSignalSpy reconnectScheduledSpy(&mqttClientMgr,
+                                     &MqttClientMgr::sig_reconnectScheduled);
+    QSignalSpy reconnectStoppedSpy(&mqttClientMgr,
+                                   &MqttClientMgr::sig_reconnectStopped);
+    QVERIFY(errorSpy.isValid());
+    QVERIFY(reconnectScheduledSpy.isValid());
+    QVERIFY(reconnectStoppedSpy.isValid());
+    QVERIFY(mqttClientMgr.connectToHost(connectionParams()));
+
+    QTRY_COMPARE(reconnectStoppedSpy.count(), 1);
+    QTRY_COMPARE(errorSpy.count(), 1);
+    QCOMPARE(reconnectStoppedSpy.at(0).at(0).toInt(),
+             static_cast<int>(QMQTT::MqttNotAuthorizedError));
+    QCOMPARE(errorSpy.at(0).at(0).toInt(),
+             static_cast<int>(QMQTT::MqttNotAuthorizedError));
+    QCOMPARE(reconnectScheduledSpy.count(), 0);
 }
 
 QTEST_GUILESS_MAIN(MqttClientMgrTest)

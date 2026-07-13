@@ -1,6 +1,8 @@
 ﻿#ifndef MQTTCLIENTMGR_H
 #define MQTTCLIENTMGR_H
 
+#include "mqttreconnectpolicy.h"
+
 #include <QObject>
 #include <QList>
 #include <QString>
@@ -88,7 +90,7 @@ private slots:
 private:
     QMQTT::Client* m_client = nullptr;   // qmqtt 客户端实例
     QTimer* m_reconnectTimer = nullptr;   // 自动重连定时器
-    int m_reconnectIntervalMs = 5000;     // 当前重连等待时间（毫秒）
+    MqttReconnectPolicy m_reconnectPolicy; // 指数退避重连策略
     bool m_manualDisconnect = false;      // 是否由用户主动断开
     bool m_reconnectAllowed = false;      // 当前连接是否允许自动重连
 };
