@@ -4,6 +4,7 @@
 #include "mqttreconnectpolicy.h"
 
 #include <QObject>
+#include <QMap>
 #include <QList>
 #include <QString>
 #include <QByteArray>
@@ -41,6 +42,8 @@ struct MqttConnectionParams
     QString willMessage = QString(""); // 遗嘱消息
     int     willQos = 0;           // 遗嘱 QoS
     bool    willRetain = false;    // 是否保留遗嘱
+    QString autoSubscribeTopic = QString(""); // 连接成功后自动订阅的 Topic
+    int     autoSubscribeQos = 1;  // 自动订阅 QoS
 };
 
 // MQTT 客户端管理类，封装连接、订阅、发布逻辑，与 UI 无关
@@ -66,6 +69,7 @@ private:
     void createClient(const MqttConnectionParams& params);      // 创建 qmqtt 客户端实例
     void applyClientConfig(const MqttConnectionParams& params); // 应用连接参数
     void forwardClientSignals();                                // 透传 qmqtt 信号
+    void restoreSubscriptions();                                // 恢复已登记的订阅
     void resetReconnectState();                                 // 重置自动重连状态
     void scheduleReconnect();                                   // 按指数退避计划下次重连
 
@@ -91,6 +95,7 @@ private:
     QMQTT::Client* m_client = nullptr;   // qmqtt 客户端实例
     QTimer* m_reconnectTimer = nullptr;   // 自动重连定时器
     MqttReconnectPolicy m_reconnectPolicy; // 指数退避重连策略
+    QMap<QString, quint8> m_subscriptions; // 需要在重连后恢复的订阅
     bool m_manualDisconnect = false;      // 是否由用户主动断开
     bool m_reconnectAllowed = false;      // 当前连接是否允许自动重连
 };

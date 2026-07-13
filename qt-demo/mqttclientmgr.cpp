@@ -64,6 +64,13 @@ bool MqttClientMgr::connectToHost(const MqttConnectionParams& params)
         normalizedParams.host = params.host.trimmed();
         normalizedParams.clientId = params.clientId.trimmed();
 
+        m_subscriptions.clear();
+        if (!normalizedParams.autoSubscribeTopic.isEmpty())
+        {
+            m_subscriptions.insert(normalizedParams.autoSubscribeTopic,
+                                   static_cast<quint8>(normalizedParams.autoSubscribeQos));
+        }
+
         createClient(normalizedParams);
         applyClientConfig(normalizedParams);
         forwardClientSignals();
@@ -90,6 +97,7 @@ bool MqttClientMgr::subscribe(const QString& topic, quint8 qos)
     bool success = isConnected() && !topic.isEmpty() && qos <= 2;
     if (success)
     {
+        m_subscriptions.insert(topic, qos);
         m_client->subscribe(topic, qos);
     }
     return success;
@@ -100,6 +108,7 @@ bool MqttClientMgr::unsubscribe(const QString& topic)
     bool success = isConnected() && !topic.isEmpty();
     if (success)
     {
+        m_subscriptions.remove(topic);
         m_client->unsubscribe(topic);
     }
     return success;
@@ -131,6 +140,7 @@ bool MqttClientMgr::isConnectionParamsValid(const MqttConnectionParams& params) 
     valid = valid && !params.clientId.trimmed().isEmpty();
     valid = valid && params.keepAlive >= 0 && params.keepAlive <= 65535;
     valid = valid && params.willQos >= 0 && params.willQos <= 2;
+    valid = valid && params.autoSubscribeQos >= 0 && params.autoSubscribeQos <= 2;
     if (valid && (params.type == MqttConnectionWs || params.type == MqttConnectionWss))
     {
         valid = !webSocketUrl(params).isEmpty();
@@ -234,6 +244,7 @@ void MqttClientMgr::forwardClientSignals()
     {
         m_reconnectTimer->stop();
         m_reconnectPolicy.reset();
+        restoreSubscriptions();
         emit sig_connected();
     });
 
@@ -284,6 +295,19 @@ void MqttClientMgr::forwardClientSignals()
 
     connect(m_client, &QMQTT::Client::pingresp,
             this, &MqttClientMgr::sig_pingResp);
+}
+
+void MqttClientMgr::restoreSubscriptions()
+{
+    if (isConnected())
+    {
+        QMap<QString, quint8>::const_iterator iterator = m_subscriptions.constBegin();
+        while (iterator != m_subscriptions.constEnd())
+        {
+            m_client->subscribe(iterator.key(), iterator.value());
+            ++iterator;
+        }
+    }
 }
 
 void MqttClientMgr::resetReconnectState()

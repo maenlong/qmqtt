@@ -114,6 +114,8 @@ void MqttClientWgt::on_connectBtn_clicked()
     params.willMessage = m_ui->willMessageLet->text();
     params.willQos = m_ui->willQosCbx->currentIndex();
     params.willRetain = m_ui->willRetainCbk->isChecked();
+    params.autoSubscribeTopic = selfInboxTopic();
+    params.autoSubscribeQos = m_ui->subQosCbx->currentIndex();
 
     if (m_mqttMgr->connectToHost(params))
     {
@@ -289,19 +291,6 @@ void MqttClientWgt::slot_onConnected()
     m_pingCount = 0;
     appendMessage(tr("[Connected] %1:%2").arg(m_ui->hostLet->text()).arg(m_ui->portLet->text()), false); // [已连接] %1:%2
     updateConnectionState(true);
-    QString topic = selfInboxTopic();
-    if (!topic.isEmpty())
-    {
-        if (m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex())))
-        {
-            appendMessage(tr("[Subscribe] %1 (QoS %2)").arg(topic)
-                                                           .arg(m_ui->subQosCbx->currentText()), false); // [订阅] %1(QoS %2)
-        }
-        else
-        {
-            appendMessage(tr("[Error] Subscribe request rejected"), false); // [错误] 订阅请求被拒绝
-        }
-    }
 }
 
 void MqttClientWgt::slot_onDisconnected()
