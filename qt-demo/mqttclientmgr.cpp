@@ -171,6 +171,7 @@ void MqttClientMgr::createClient(const MqttConnectionParams& params)
 
 void MqttClientMgr::applyClientConfig(const MqttConnectionParams& params)
 {
+    m_client->setVersion(QMQTT::V3_1_1);
     m_client->setClientId(params.clientId);
     if (!params.username.isEmpty())
     {
