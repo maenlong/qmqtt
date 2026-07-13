@@ -3,16 +3,28 @@
 #include <QSslError>
 #include <QSslConfiguration>
 #include <QSslCertificate>
+#include <QTimer>
 #include <QUrl>
 #include <QtWebSockets/QWebSocketProtocol>
+
+namespace {
+const int InitialReconnectIntervalMs = 5000;
+const int MaximumReconnectIntervalMs = 60000;
+}
 
 MqttClientMgr::MqttClientMgr(QObject* parent)
     : QObject(parent)
 {
+    m_reconnectTimer = new QTimer(this);
+    m_reconnectTimer->setSingleShot(true);
+    connect(m_reconnectTimer, &QTimer::timeout,
+            this, &MqttClientMgr::slot_reconnect);
 }
 
 MqttClientMgr::~MqttClientMgr()
 {
+    m_reconnectAllowed = false;
+    m_reconnectTimer->stop();
     if (m_client)
     {
         m_client->disconnect();
@@ -43,6 +55,8 @@ bool MqttClientMgr::connectToHost(const MqttConnectionParams& params)
     }
     else
     {
+        resetReconnectState();
+
         if (m_client)
         {
             m_client->disconnect();
@@ -67,9 +81,11 @@ bool MqttClientMgr::connectToHost(const MqttConnectionParams& params)
 
 void MqttClientMgr::disconnectFromHost()
 {
+    m_manualDisconnect = true;
+    m_reconnectAllowed = false;
+    m_reconnectTimer->stop();
     if (m_client)
     {
-        m_client->setAutoReconnect(false);
         m_client->disconnectFromHost();
     }
 }
@@ -121,6 +137,15 @@ bool MqttClientMgr::isConnectionParamsValid(const MqttConnectionParams& params) 
     return valid;
 }
 
+bool MqttClientMgr::isPermanentConnectionError(int errorCode) const
+{
+    return errorCode == QMQTT::SocketProxyAuthenticationRequiredError
+            || errorCode == QMQTT::MqttUnacceptableProtocolVersionError
+            || errorCode == QMQTT::MqttIdentifierRejectedError
+            || errorCode == QMQTT::MqttBadUserNameOrPasswordError
+            || errorCode == QMQTT::MqttNotAuthorizedError;
+}
+
 QString MqttClientMgr::webSocketUrl(const MqttConnectionParams& params) const
 {
     QString result = QString("");
@@ -165,8 +190,8 @@ void MqttClientMgr::createClient(const MqttConnectionParams& params)
         m_client = new QMQTT::Client(params.host, params.port, false, false, this);
     }
 
-    m_client->setAutoReconnect(true);
-    m_client->setAutoReconnectInterval(5000);
+    // 由管理层统一实施指数退避，避免 qmqtt 固定间隔重连与业务策略冲突。
+    m_client->setAutoReconnect(false);
 }
 
 void MqttClientMgr::applyClientConfig(const MqttConnectionParams& params)
@@ -204,15 +229,32 @@ void MqttClientMgr::applyClientConfig(const MqttConnectionParams& params)
 void MqttClientMgr::forwardClientSignals()
 {
     connect(m_client, &QMQTT::Client::connected,
-            this, &MqttClientMgr::sig_connected);
+            this, [this]()
+    {
+        m_reconnectTimer->stop();
+        m_reconnectIntervalMs = InitialReconnectIntervalMs;
+        emit sig_connected();
+    });
 
     connect(m_client, &QMQTT::Client::disconnected,
-            this, &MqttClientMgr::sig_disconnected);
+            this, [this]()
+    {
+        emit sig_disconnected();
+        scheduleReconnect();
+    });
 
     connect(m_client, &QMQTT::Client::error,
             this, [this](const QMQTT::ClientError error)
     {
-        emit sig_error(static_cast<int>(error));
+        int errorCode = static_cast<int>(error);
+        if (isPermanentConnectionError(errorCode))
+        {
+            m_reconnectAllowed = false;
+            m_reconnectTimer->stop();
+            emit sig_reconnectStopped(errorCode);
+            m_client->disconnectFromHost();
+        }
+        emit sig_error(errorCode);
     });
 
     connect(m_client, &QMQTT::Client::sslErrors,
@@ -241,4 +283,43 @@ void MqttClientMgr::forwardClientSignals()
 
     connect(m_client, &QMQTT::Client::pingresp,
             this, &MqttClientMgr::sig_pingResp);
+}
+
+void MqttClientMgr::resetReconnectState()
+{
+    m_reconnectTimer->stop();
+    m_reconnectIntervalMs = InitialReconnectIntervalMs;
+    m_manualDisconnect = false;
+    m_reconnectAllowed = true;
+}
+
+void MqttClientMgr::scheduleReconnect()
+{
+    if (!m_client || m_manualDisconnect || !m_reconnectAllowed
+            || m_reconnectTimer->isActive())
+    {
+        return;
+    }
+
+    int delayMs = m_reconnectIntervalMs;
+    m_reconnectTimer->start(delayMs);
+    emit sig_reconnectScheduled(delayMs / 1000);
+
+    if (m_reconnectIntervalMs < MaximumReconnectIntervalMs)
+    {
+        m_reconnectIntervalMs *= 2;
+        if (m_reconnectIntervalMs > MaximumReconnectIntervalMs)
+        {
+            m_reconnectIntervalMs = MaximumReconnectIntervalMs;
+        }
+    }
+}
+
+void MqttClientMgr::slot_reconnect()
+{
+    if (m_client && !m_manualDisconnect && m_reconnectAllowed
+            && !m_client->isConnectedToHost())
+    {
+        m_client->connectToHost();
+    }
 }

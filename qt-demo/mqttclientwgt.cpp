@@ -73,6 +73,12 @@ MqttClientWgt::MqttClientWgt(QWidget* parent)
     connect(m_mqttMgr, &MqttClientMgr::sig_pingResp,
             this, &MqttClientWgt::slot_onPingResp);
 
+    connect(m_mqttMgr, &MqttClientMgr::sig_reconnectScheduled,
+            this, &MqttClientWgt::slot_onReconnectScheduled);
+
+    connect(m_mqttMgr, &MqttClientMgr::sig_reconnectStopped,
+            this, &MqttClientWgt::slot_onReconnectStopped);
+
     m_ui->mainLayout->setStretch(m_ui->mainLayout->indexOf(m_ui->logGrp), 1);
     m_ui->langCbx->addItems({"EN", "中文"});
 
@@ -326,6 +332,16 @@ void MqttClientWgt::slot_onPingResp()
 {
     ++m_pingCount;
     appendMessage(QString("[%1] %2 #%3").arg(QTime::currentTime().toString("HH:mm:ss")).arg(tr("[Ping] OK")).arg(m_pingCount), false); // [心跳] OK
+}
+
+void MqttClientWgt::slot_onReconnectScheduled(int delaySeconds)
+{
+    appendMessage(tr("[Reconnect] Retrying in %1 seconds").arg(delaySeconds), false); // [重连] 将在 %1 秒后重试
+}
+
+void MqttClientWgt::slot_onReconnectStopped(int errorCode)
+{
+    appendMessage(tr("[Reconnect] Stopped, error code: %1").arg(errorCode), false); // [重连] 已停止，错误代码: %1
 }
 
 void MqttClientWgt::on_browseCaCertBtn_clicked()

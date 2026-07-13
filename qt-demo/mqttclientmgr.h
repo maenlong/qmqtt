@@ -7,6 +7,7 @@
 #include <QByteArray>
 
 class QSslError;
+class QTimer;
 
 namespace QMQTT {
 class Client;
@@ -58,10 +59,13 @@ public:
 
 private:
     bool isConnectionParamsValid(const MqttConnectionParams& params) const; // 校验连接参数
+    bool isPermanentConnectionError(int errorCode) const;          // 判断连接错误是否不可自动恢复
     QString webSocketUrl(const MqttConnectionParams& params) const; // 构建 WebSocket URL
     void createClient(const MqttConnectionParams& params);      // 创建 qmqtt 客户端实例
     void applyClientConfig(const MqttConnectionParams& params); // 应用连接参数
     void forwardClientSignals();                                // 透传 qmqtt 信号
+    void resetReconnectState();                                 // 重置自动重连状态
+    void scheduleReconnect();                                   // 按指数退避计划下次重连
 
 signals:
     void sig_connected();              // MQTT 连接成功
@@ -75,9 +79,18 @@ signals:
     void sig_unsubscribed(const QString& topic); // 收到取消订阅确认（UNSUBACK）
     void sig_published(const QString& topic, quint8 qos, quint16 messageId); // 收到发布结果
     void sig_pingResp();               // 收到心跳回复（PINGRESP）
+    void sig_reconnectScheduled(int delaySeconds); // 已计划自动重连
+    void sig_reconnectStopped(int errorCode);      // 永久错误导致自动重连停止
+
+private slots:
+    void slot_reconnect();             // 执行自动重连
 
 private:
     QMQTT::Client* m_client = nullptr;   // qmqtt 客户端实例
+    QTimer* m_reconnectTimer = nullptr;   // 自动重连定时器
+    int m_reconnectIntervalMs = 5000;     // 当前重连等待时间（毫秒）
+    bool m_manualDisconnect = false;      // 是否由用户主动断开
+    bool m_reconnectAllowed = false;      // 当前连接是否允许自动重连
 };
 
 #endif

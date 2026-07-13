@@ -52,6 +52,8 @@ private slots:
     void slot_onUnsubscribed(const QString& topic); // 收到取消订阅确认
     void slot_onPublished(const QString& topic, quint8 qos, quint16 messageId); // 收到发布结果
     void slot_onPingResp();                               // Ping 响应确认
+    void slot_onReconnectScheduled(int delaySeconds);     // 自动重连已计划
+    void slot_onReconnectStopped(int errorCode);          // 永久错误导致自动重连停止
 
 private:
     Ui::MqttClientWgt* m_ui = nullptr;        // UI 实例
