@@ -8,6 +8,7 @@
 #include <QUuid>
 #include <QSslError>
 #include <QFileDialog>
+#include <QStyle>
 #include <QTime>
 
 MqttClientWgt::MqttClientWgt(QWidget* parent)
@@ -182,7 +183,10 @@ void MqttClientWgt::updateConnectionState(bool connected)
     m_ui->connectBtn->setEnabled(!connected);
     m_ui->disconnectBtn->setEnabled(connected);
     m_ui->statusTextLbl->setText(connected ? tr("Connected") : tr("Disconnected")); // 已连接 / 已断开
-    m_ui->statusTextLbl->setStyleSheet(connected ? "color: green;" : "color: red;");
+    m_ui->statusTextLbl->setProperty("mqttConnectionState",
+                                     connected ? QString("connected") : QString("disconnected"));
+    m_ui->statusTextLbl->style()->unpolish(m_ui->statusTextLbl);
+    m_ui->statusTextLbl->style()->polish(m_ui->statusTextLbl);
 }
 
 void MqttClientWgt::on_typeCbx_currentIndexChanged(int index)
