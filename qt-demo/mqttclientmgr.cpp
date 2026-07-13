@@ -25,7 +25,23 @@ MqttClientMgr::~MqttClientMgr()
 bool MqttClientMgr::connectToHost(const MqttConnectionParams& params)
 {
     bool success = false;
-    if (isConnectionParamsValid(params))
+    bool paramsValid = isConnectionParamsValid(params);
+    bool caCertificateValid = true;
+    QString caCertificatePath = params.sslCaCertPath.trimmed();
+    if (params.type == MqttConnectionWss && !caCertificatePath.isEmpty())
+    {
+        caCertificateValid = !QSslCertificate::fromPath(caCertificatePath).isEmpty();
+    }
+
+    if (!caCertificateValid)
+    {
+        emit sig_caCertificateLoadFailed(caCertificatePath);
+    }
+    else if (!paramsValid)
+    {
+        emit sig_connectionParamsInvalid();
+    }
+    else
     {
         if (m_client)
         {
@@ -172,13 +188,13 @@ void MqttClientMgr::applyClientConfig(const MqttConnectionParams& params)
         m_client->setWillRetain(params.willRetain);
     }
 
-    if (!params.sslCaCertPath.isEmpty())
+    if (params.type == MqttConnectionWss && !params.sslCaCertPath.trimmed().isEmpty())
     {
         QSslConfiguration sslConfig = m_client->sslConfiguration();
-        QList<QSslCertificate> caCerts = QSslCertificate::fromPath(params.sslCaCertPath);
+        QList<QSslCertificate> caCerts = QSslCertificate::fromPath(params.sslCaCertPath.trimmed());
         if (!caCerts.isEmpty())
         {
-            sslConfig.setCaCertificates(caCerts);
+            sslConfig.addCaCertificates(caCerts);
             m_client->setSslConfiguration(sslConfig);
         }
     }

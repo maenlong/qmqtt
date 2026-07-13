@@ -48,6 +48,12 @@ MqttClientWgt::MqttClientWgt(QWidget* parent)
     connect(m_mqttMgr, &MqttClientMgr::sig_error,
             this, &MqttClientWgt::slot_onError);
 
+    connect(m_mqttMgr, &MqttClientMgr::sig_connectionParamsInvalid,
+            this, &MqttClientWgt::slot_onConnectionParamsInvalid);
+
+    connect(m_mqttMgr, &MqttClientMgr::sig_caCertificateLoadFailed,
+            this, &MqttClientWgt::slot_onCaCertificateLoadFailed);
+
     connect(m_mqttMgr, &MqttClientMgr::sig_sslErrors,
             this, &MqttClientWgt::slot_onSslErrors);
 
@@ -105,10 +111,6 @@ void MqttClientWgt::on_connectBtn_clicked()
     if (m_mqttMgr->connectToHost(params))
     {
         appendMessage(tr("[Connecting] ..."), false); // [正在连接] ...
-    }
-    else
-    {
-        appendMessage(tr("[Error] Invalid connection parameters"), false); // [错误] 连接参数无效
     }
 }
 
@@ -207,6 +209,7 @@ void MqttClientWgt::on_typeCbx_currentIndexChanged(int index)
     m_ui->websocketPathLet->setEnabled(webSocketEnabled);
     m_ui->websocketOriginTipLbl->setEnabled(webSocketEnabled);
     m_ui->websocketOriginLet->setEnabled(webSocketEnabled);
+    m_ui->sslGrp->setEnabled(type == MqttConnectionWss);
     if (type == MqttConnectionWss)
     {
         m_ui->portLet->setText(QString("8084"));
@@ -244,6 +247,16 @@ void MqttClientWgt::slot_onDisconnected()
 void MqttClientWgt::slot_onError(int errorCode)
 {
     appendMessage(tr("[Error] code: %1").arg(errorCode), false); // [错误] 代码: %1
+}
+
+void MqttClientWgt::slot_onConnectionParamsInvalid()
+{
+    appendMessage(tr("[Error] Invalid connection parameters"), false); // [错误] 连接参数无效
+}
+
+void MqttClientWgt::slot_onCaCertificateLoadFailed(const QString& path)
+{
+    appendMessage(tr("[Error] Failed to load CA certificate: %1").arg(path), false); // [错误] CA 证书加载失败: %1
 }
 
 void MqttClientWgt::slot_onSslErrors(const QList<QSslError>& errors)
@@ -377,7 +390,7 @@ void MqttClientWgt::applyTranslations()
     m_ui->proxyUsernameLet->setToolTip(tr("Optional proxy authentication username")); // 可选：代理认证用户名
     m_ui->proxyPasswordLet->setToolTip(tr("Optional proxy authentication password")); // 可选：代理认证密码
 
-    m_ui->sslCaCertLet->setToolTip(tr("Path to CA certificate file (.pem / .crt / .cer / .der).\nLeave empty to use system CA bundle.")); // CA 证书文件路径，留空使用系统 CA
+    m_ui->sslCaCertLet->setToolTip(tr("Path to CA certificate file (.pem / .crt / .cer / .der).\nCustom certificates are added to the system CA bundle.")); // CA 证书文件路径，自定义证书将追加到系统 CA
     m_ui->ignoreSelfSignedCbk->setToolTip(tr("If checked, self-signed certificates are accepted.\nUse for testing with custom CA or self-signed servers.")); // 选中后接受自签名证书，用于测试环境
 
     bool connected = m_mqttMgr->isConnected();

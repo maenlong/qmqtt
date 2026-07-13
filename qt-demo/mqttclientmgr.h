@@ -67,6 +67,8 @@ signals:
     void sig_connected();              // MQTT 连接成功
     void sig_disconnected();           // MQTT 断开连接
     void sig_error(int errorCode);     // MQTT 错误
+    void sig_connectionParamsInvalid(); // MQTT 连接参数无效
+    void sig_caCertificateLoadFailed(const QString& path); // CA 证书加载失败
     void sig_sslErrors(const QList<QSslError>& errors);  // SSL 证书错误
     void sig_messageReceived(const QString& topic, const QByteArray& payload);  // 收到消息
     void sig_subscribed(const QString& topic, quint8 qos); // 收到订阅确认（SUBACK）

@@ -44,6 +44,8 @@ private slots:
     void slot_onConnected();              // MQTT 连接成功
     void slot_onDisconnected();           // MQTT 断开连接
     void slot_onError(int errorCode);     // MQTT 错误
+    void slot_onConnectionParamsInvalid(); // MQTT 连接参数无效
+    void slot_onCaCertificateLoadFailed(const QString& path); // CA 证书加载失败
     void slot_onSslErrors(const QList<QSslError>& errors);  // SSL 错误
     void slot_onMessageReceived(const QString& topic, const QByteArray& payload);  // 收到消息
     void slot_onSubscribed(const QString& topic, quint8 qos); // 收到订阅确认

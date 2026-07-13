@@ -52,6 +52,7 @@ qt-demo/
 - [x] WS（WebSocket）连接
 - [x] WSS（WebSocket + TLS）连接
 - [x] WebSocket Path / Origin 可配置，使用 QUrl 构建连接地址
+- [x] 自定义 CA 追加到系统 CA，证书加载失败时阻止连接
 - [x] 用户名/密码认证
 - [x] Keep Alive 30s
 - [x] Clean Session true/false
