@@ -46,6 +46,9 @@ private slots:
     void slot_onError(int errorCode);     // MQTT 错误
     void slot_onSslErrors(const QList<QSslError>& errors);  // SSL 错误
     void slot_onMessageReceived(const QString& topic, const QByteArray& payload);  // 收到消息
+    void slot_onSubscribed(const QString& topic, quint8 qos); // 收到订阅确认
+    void slot_onUnsubscribed(const QString& topic); // 收到取消订阅确认
+    void slot_onPublished(const QString& topic, quint8 qos, quint16 messageId); // 收到发布结果
     void slot_onPingResp();                               // Ping 响应确认
 
 private:

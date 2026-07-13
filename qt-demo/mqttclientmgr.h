@@ -59,7 +59,10 @@ signals:
     void sig_error(int errorCode);     // MQTT 错误
     void sig_sslErrors(const QList<QSslError>& errors);  // SSL 证书错误
     void sig_messageReceived(const QString& topic, const QByteArray& payload);  // 收到消息
-    void sig_pingresp();               // 收到心跳回复（PINGRESP）
+    void sig_subscribed(const QString& topic, quint8 qos); // 收到订阅确认（SUBACK）
+    void sig_unsubscribed(const QString& topic); // 收到取消订阅确认（UNSUBACK）
+    void sig_published(const QString& topic, quint8 qos, quint16 messageId); // 收到发布结果
+    void sig_pingResp();               // 收到心跳回复（PINGRESP）
 
 private:
     QMQTT::Client* m_client = nullptr;   // qmqtt 客户端实例

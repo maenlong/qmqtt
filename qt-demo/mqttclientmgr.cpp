@@ -160,20 +160,35 @@ void MqttClientMgr::forwardClientSignals()
             this, &MqttClientMgr::sig_disconnected);
 
     connect(m_client, &QMQTT::Client::error,
-            this, [this](const QMQTT::ClientError error) {
+            this, [this](const QMQTT::ClientError error)
+    {
         emit sig_error(static_cast<int>(error));
     });
 
     connect(m_client, &QMQTT::Client::sslErrors,
-            this, [this](const QList<QSslError>& errors) {
+            this, [this](const QList<QSslError>& errors)
+    {
         emit sig_sslErrors(errors);
     });
 
     connect(m_client, &QMQTT::Client::received,
-            this, [this](const QMQTT::Message& msg) {
+            this, [this](const QMQTT::Message& msg)
+    {
         emit sig_messageReceived(msg.topic(), msg.payload());
     });
 
+    connect(m_client, &QMQTT::Client::subscribed,
+            this, &MqttClientMgr::sig_subscribed);
+
+    connect(m_client, &QMQTT::Client::unsubscribed,
+            this, &MqttClientMgr::sig_unsubscribed);
+
+    connect(m_client, &QMQTT::Client::published,
+            this, [this](const QMQTT::Message& msg, quint16 messageId)
+    {
+        emit sig_published(msg.topic(), msg.qos(), messageId);
+    });
+
     connect(m_client, &QMQTT::Client::pingresp,
-            this, &MqttClientMgr::sig_pingresp);
+            this, &MqttClientMgr::sig_pingResp);
 }

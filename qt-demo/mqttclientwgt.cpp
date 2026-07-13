@@ -46,7 +46,16 @@ MqttClientWgt::MqttClientWgt(QWidget* parent)
     connect(m_mqttMgr, &MqttClientMgr::sig_messageReceived,
             this, &MqttClientWgt::slot_onMessageReceived);
 
-    connect(m_mqttMgr, &MqttClientMgr::sig_pingresp,
+    connect(m_mqttMgr, &MqttClientMgr::sig_subscribed,
+            this, &MqttClientWgt::slot_onSubscribed);
+
+    connect(m_mqttMgr, &MqttClientMgr::sig_unsubscribed,
+            this, &MqttClientWgt::slot_onUnsubscribed);
+
+    connect(m_mqttMgr, &MqttClientMgr::sig_published,
+            this, &MqttClientWgt::slot_onPublished);
+
+    connect(m_mqttMgr, &MqttClientMgr::sig_pingResp,
             this, &MqttClientWgt::slot_onPingResp);
 
     m_ui->mainLayout->setStretch(m_ui->mainLayout->indexOf(m_ui->logGrp), 1);
@@ -204,7 +213,8 @@ void MqttClientWgt::slot_onConnected()
     if (!topic.isEmpty())
     {
         m_mqttMgr->subscribe(topic, static_cast<quint8>(m_ui->subQosCbx->currentIndex()));
-        appendMessage(tr("[Subscribed] %1").arg(topic), false); // [已订阅] %1
+        appendMessage(tr("[Subscribe] %1 (QoS %2)").arg(topic)
+                                                       .arg(m_ui->subQosCbx->currentText()), false); // [订阅] %1(QoS %2)
     }
 }
 
@@ -230,6 +240,31 @@ void MqttClientWgt::slot_onSslErrors(const QList<QSslError>& errors)
 void MqttClientWgt::slot_onMessageReceived(const QString& topic, const QByteArray& payload)
 {
     appendMessage(tr("[Received] %1: %2").arg(topic).arg(QString::fromUtf8(payload)), false); // [收到] %1: %2
+}
+
+void MqttClientWgt::slot_onSubscribed(const QString& topic, quint8 qos)
+{
+    if (qos <= 2)
+    {
+        appendMessage(tr("[Subscribed] %1 (QoS %2)").arg(topic).arg(qos), false); // [已订阅] %1(QoS %2)
+    }
+    else
+    {
+        appendMessage(tr("[Subscribe Failed] %1").arg(topic), false); // [订阅失败] %1
+    }
+}
+
+void MqttClientWgt::slot_onUnsubscribed(const QString& topic)
+{
+    appendMessage(tr("[Unsubscribed] %1").arg(topic), false); // [已取消订阅] %1
+}
+
+void MqttClientWgt::slot_onPublished(const QString& topic, quint8 qos, quint16 messageId)
+{
+    if (qos > 0)
+    {
+        appendMessage(tr("[Published] %1 (QoS %2, Message ID %3)").arg(topic).arg(qos).arg(messageId), true); // [发布确认] %1(QoS %2, 消息 ID %3)
+    }
 }
 
 void MqttClientWgt::on_applyProxyBtn_clicked()
