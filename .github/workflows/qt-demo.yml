@@ -1,0 +1,200 @@
+name: Qt Demo CI
+
+on:
+  push:
+    paths:
+      - ".github/workflows/qt-demo.yml"
+      - "qmqtt.pri"
+      - "qmqtt.pro"
+      - "src/**"
+      - "qt-demo/**"
+  pull_request:
+    paths:
+      - ".github/workflows/qt-demo.yml"
+      - "qmqtt.pri"
+      - "qmqtt.pro"
+      - "src/**"
+      - "qt-demo/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qt-demo-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows MSVC x64
+            os: windows-2022
+            qt_source: qt_archive
+            qt_version: "5.15.2"
+            qt_arch: win64_msvc2019_64
+            build_arch: x64
+            runner_arch: AMD64
+            binary_arch_pattern: "machine (x64)"
+          - name: Windows MSVC x86
+            os: windows-2022
+            qt_source: qt_archive
+            qt_version: "5.15.2"
+            qt_arch: win32_msvc2019
+            build_arch: x86
+            runner_arch: AMD64
+            binary_arch_pattern: "machine (x86)"
+          - name: Ubuntu GCC x64
+            os: ubuntu-22.04
+            qt_source: qt_archive
+            qt_version: "5.15.2"
+            qt_arch: gcc_64
+            build_arch: x64
+            runner_arch: x86_64
+            binary_arch_pattern: x86-64
+          - name: Ubuntu GCC ARM64
+            os: ubuntu-22.04-arm
+            qt_source: apt
+            qt_version: "5.15.3"
+            qt_arch: system_arm64
+            build_arch: arm64
+            runner_arch: aarch64
+            binary_arch_pattern: "ARM aarch64"
+          - name: macOS Clang x64
+            os: macos-15-intel
+            qt_source: homebrew
+            qt_version: "5.15.19"
+            qt_arch: homebrew_x64
+            build_arch: x64
+            runner_arch: x86_64
+            binary_arch_pattern: x86_64
+          - name: macOS Clang ARM64
+            os: macos-15
+            qt_source: homebrew
+            qt_version: "5.15.19"
+            qt_arch: homebrew_arm64
+            build_arch: arm64
+            runner_arch: arm64
+            binary_arch_pattern: arm64
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Install Qt from Qt archive
+        if: matrix.qt_source == 'qt_archive'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ matrix.qt_version }}
+          arch: ${{ matrix.qt_arch }}
+          modules: "qtwebsockets"
+          cache: true
+
+      - name: Install Qt from Ubuntu packages
+        if: matrix.qt_source == 'apt'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends \
+              build-essential \
+              libqt5websockets5-dev \
+              qt5-qmake \
+              qtbase5-dev \
+              qtbase5-dev-tools
+          echo "/usr/lib/qt5/bin" >> "$GITHUB_PATH"
+
+      - name: Install Qt from Homebrew
+        if: matrix.qt_source == 'homebrew'
+        shell: bash
+        run: |
+          brew install qt@5
+          echo "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"
+
+      - name: Build demo and run QtTest (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          for /f "usebackq delims=" %%I in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VS_DIR=%%I"
+          if not defined VS_DIR (
+              echo [ERROR] Visual Studio with C++ tools was not found.
+              exit /b 1
+          )
+          call "%VS_DIR%\Common7\Tools\VsDevCmd.bat" -arch=${{ matrix.build_arch }} -host_arch=x64
+          if errorlevel 1 exit /b 1
+
+          echo [Target] Windows ${{ matrix.build_arch }}
+          qmake -query QT_VERSION
+          if errorlevel 1 exit /b 1
+          qmake -query QT_INSTALL_PREFIX
+          if errorlevel 1 exit /b 1
+
+          if not exist "qt-demo\build\ci-demo" mkdir "qt-demo\build\ci-demo"
+          pushd "qt-demo\build\ci-demo"
+          qmake ..\..\mqtt-client.pro CONFIG+=release
+          if errorlevel 1 exit /b 1
+          nmake /NOLOGO
+          if errorlevel 1 exit /b 1
+          dumpbin /headers release\mqtt-client.exe | findstr /I /C:"${{ matrix.binary_arch_pattern }}"
+          if errorlevel 1 (
+              echo [ERROR] The demo binary architecture does not match ${{ matrix.build_arch }}.
+              exit /b 1
+          )
+          popd
+
+          if not exist "qt-demo\build\ci-tests" mkdir "qt-demo\build\ci-tests"
+          pushd "qt-demo\build\ci-tests"
+          qmake ..\..\tests\tests.pro CONFIG+=release
+          if errorlevel 1 exit /b 1
+          nmake /NOLOGO
+          if errorlevel 1 exit /b 1
+          nmake /NOLOGO check
+
+      - name: Build demo and run QtTest (Linux and macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "[Target] $RUNNER_OS ${{ matrix.build_arch }}"
+          runner_arch="$(uname -m)"
+          echo "[Runner architecture] $runner_arch"
+          if [[ "$runner_arch" != "${{ matrix.runner_arch }}" ]]; then
+              echo "[ERROR] Expected runner architecture ${{ matrix.runner_arch }}, got $runner_arch."
+              exit 1
+          fi
+          qt_version="$(qmake -query QT_VERSION)"
+          echo "[Qt version] $qt_version"
+          if [[ "$qt_version" != "${{ matrix.qt_version }}" ]]; then
+              echo "[ERROR] Expected Qt ${{ matrix.qt_version }}, got $qt_version."
+              exit 1
+          fi
+          echo "[Qt prefix] $(qmake -query QT_INSTALL_PREFIX)"
+
+          qmake_args=(CONFIG+=release)
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+              qmake_args+=(CONFIG+=sdk_no_version_check)
+          fi
+
+          mkdir -p qt-demo/build/ci-demo qt-demo/build/ci-tests
+
+          pushd qt-demo/build/ci-demo
+          qmake ../../mqtt-client.pro "${qmake_args[@]}"
+          make -j2
+          binary_path="mqtt-client"
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+              binary_path="mqtt-client.app/Contents/MacOS/mqtt-client"
+          fi
+          file "$binary_path"
+          file "$binary_path" | grep -F "${{ matrix.binary_arch_pattern }}"
+          popd
+
+          pushd qt-demo/build/ci-tests
+          qmake ../../tests/tests.pro "${qmake_args[@]}"
+          make -j2
+          make check

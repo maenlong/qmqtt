@@ -488,3 +488,43 @@ call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\Too
 - 本机已有的 Qt 插件或环境变量。
 
 测试应尽量使用 Qt 跨平台 API、本地临时资源和可控的假服务。
+
+## 17. GitHub Actions 持续集成
+
+仓库通过 `.github/workflows/qt-demo.yml` 自动验证 Demo，触发条件包括：
+
+- 修改 `qt-demo`、QMQTT 源码或对应 QMake 工程文件后推送代码；
+- 创建或更新 Pull Request；
+- 在 GitHub Actions 页面手动触发。
+
+工作流分别在以下环境完成原生构建和测试：
+
+| 平台 | 目标架构 | 编译器 | Qt 来源 |
+|---|---|---|---|
+| Windows 2022 | x64 | MSVC | Qt 5.15.2 `win64_msvc2019_64` |
+| Windows 2022 | x86 | MSVC | Qt 5.15.2 `win32_msvc2019` |
+| Ubuntu 22.04 | x64 | GCC | Qt 5.15.2 `gcc_64` |
+| Ubuntu 22.04 | ARM64 | GCC | Ubuntu Qt 5.15.3 原生包 |
+| macOS 15 Intel | x64 | Clang | Homebrew `qt@5` 5.15.19 原生包 |
+| macOS 15 Apple Silicon | ARM64 | Clang | Homebrew `qt@5` 5.15.19 原生包 |
+
+Windows x86 任务运行在 x64 Runner 上，但通过 MSVC x86 工具链和 Qt 32 位库生成并运行真正的 32 位程序。Ubuntu ARM64 和 macOS ARM64 任务直接运行在 GitHub ARM64 Runner 上。
+
+Qt 5.15.2 官方桌面仓库没有 Linux ARM64 和 macOS ARM64 预编译包。为避免耗时且不稳定的 Qt 源码编译，两个 ARM64 任务使用系统提供的原生 Qt 5 包；它们仍满足项目 Qt 5.11.3 及以上的兼容要求。
+
+macOS Intel 和 Apple Silicon 统一使用 Homebrew `qt@5` 5.15.19，减少同一操作系统不同架构之间由 Qt 补丁版本造成的行为差异。工作流会检查 `qmake` 报告的实际版本，不符合矩阵要求时直接失败。
+
+GitHub 当前不提供麒麟或 UOS 的 Hosted Runner。Ubuntu 构建可以验证大部分通用 Linux 源码、QMake 工程和 Qt API 兼容性，但不能证明 Ubuntu 生成的二进制可直接在麒麟或 UOS 上交付。涉及发布时，还需要验证目标系统的 glibc、libstdc++、OpenSSL、Qt 插件、X11/Wayland、桌面集成和安装包格式。
+
+麒麟和 UOS 可以尝试分别部署 GitHub Actions 自托管 Runner，并添加 `kylin`、`uos`、`x64` 或 `ARM64` 标签。GitHub 官方支持列表没有单独列出这两个发行版，因此接入前还需在目标系统验证 Runner 服务本身。没有对应 Runner 时不应把任务直接加入当前矩阵，否则任务会一直排队。只需要编译检查时也可以使用目标系统容器；涉及 QWidget 启动、系统代理、证书、输入法和桌面交互时，应使用真实系统或虚拟机 Runner。
+
+每个平台依次执行：
+
+1. 安装 Qt Core、Network、Widgets、TestLib 和 WebSockets 等工程依赖；
+2. 使用 `qt-demo/mqtt-client.pro` 构建 Demo；
+3. 使用 `qt-demo/tests/tests.pro` 构建全部 QtTest 程序；
+4. 执行 `nmake check` 或 `make check`。
+
+CI 不调用本地构建脚本，因此不会覆盖脚本中显式配置的 Qt 或 Visual Studio 路径。CI 使用 GitHub Runner 临时安装的 Qt，本地脚本仍遵循“配置路径非空时严格使用指定版本，留空时扫描并让用户选择”的规则。每个任务会在日志中输出目标架构、Runner 架构、Qt 版本和安装路径，并检查生成的 Demo 二进制架构；架构不匹配时任务会直接失败。
+
+测试使用本地 `QTcpServer` 模拟 Broker，不需要公网 MQTT 服务、账号密码或仓库 Secret。CI 通过只能证明 Demo 可以跨平台编译且自动化用例通过；真实 Broker 的 TLS、代理、弱网和跨网络连通性仍应在集成环境中验证。
