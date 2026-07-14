@@ -93,7 +93,6 @@ jobs:
         with:
           version: ${{ matrix.qt_version }}
           arch: ${{ matrix.qt_arch }}
-          modules: "qtwebsockets"
           cache: true
 
       - name: Install Qt from Ubuntu packages
@@ -113,6 +112,7 @@ jobs:
         if: matrix.qt_source == 'homebrew'
         shell: bash
         run: |
+          brew untap aws/tap || true
           brew install qt@5
           echo "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"
 
